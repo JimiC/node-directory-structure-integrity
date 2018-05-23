@@ -1,0 +1,169 @@
+# API
+
+All `API` calls are `static` members of the `Integrity` class.
+
+---
+
+>## CurrentSchemaVersion
+
+`Description`: Constant value of the current schema version used.
+
+`Return Type`: `string`
+
+---
+
+>## check
+
+`Description`: Checks the integrity of a directory or a file
+
+`Info`: The `inPath` can be an absolute or relative path.
+
+`Return Type`: `Promise<boolean>`
+
+`Parameters`:
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|inPath|string|||the path of the file or directory to check|
+|integrity|string|||the path of the directory containing the integrity file or the path to the integrity file or a stringified integrity JSON or a hash string, to check against|
+|options|IntegrityOptions|optional|see [options](#options) section|the `integrity` options to use|
+
+`Examples`
+
+- [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/check-es5-js.md)
+- [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/check-js-ts.md)
+
+---
+
+>## create
+
+`Description`: Creates an integrity object of a directory or file.
+
+`Info`: `create` is a top-level helper function designed to internally determine whether to use `createDirHash` or `createFileHash`, saving you the coding hassle. Usually, `create` will be the function you are going to use, when you want to create an `integrity` object. The `inPath` can be an absolute or relative path.
+
+`Return Type`: `Promise<IndexedObject>`
+
+`Parameters`:
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|inPath|string|||the path of the file or directory to hash|
+|options|IntegrityOptions|optional|see [options](#options) section|the `integrity` options to use|
+
+`Examples`
+
+- [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/create-es5-js.md)
+- [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/create-js-ts.md)
+
+---
+
+>## createDirHash
+
+`Description`: Creates an integrity object of a directory
+
+`Info`: `createDirHash` is a function designed to create an `integrity` object for a directory. The `dirPath` can be an absolute or relative path. Creating a non-verbosely `integrity` object will compute all contents hashes combined.
+
+`Return Type`: `Promise<IndexedObject>`
+
+`Parameters`:
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|dirPath|string|||the path of the directory to hash|
+|options|IntegrityOptions|optional|see [options](#options) section|the `integrity` options to use|
+
+`Examples`
+
+- [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/check-es5-js.md)
+- [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/check-js-ts.md)
+
+---
+
+>## createFileHash
+
+`Description`: Creates an integrity object of a file
+
+`Info`: `createFileHash` is a function designed to create an `integrity` object for a file. The `filePath` can be an absolute or relative path.
+
+`Return Type`: `Promise<IndexedObject>`
+
+`Parameters`:
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|filePath|string|||the path of the file to hash|
+|options|ICryptoOptions|optional|see [options](#options) section|the `crypto` options to use|
+
+`Examples`
+
+- [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/createFileHash-es5-js.md)
+- [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/createFileHash-js-ts.md)
+
+---
+
+>## createFilesHash
+
+`Description`: Creates an integrity object of a list of files
+
+`Info`: `createFilesHash` is a function designed to create an `integrity` object for a list of files. The `filenames` can be absolute or relative paths.
+
+`Return Type`: `Promise<IndexedObject>`
+
+`Parameters`:
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|filenames|string[]|||the list of the file paths to hash|
+|options|ICryptoOptions|optional|see [options](#options) section|the `crypto` options to use|
+
+`Examples`
+
+- [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/createFilesHash-es5-js.md)
+- [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/createFilesHash-js-ts.md)
+
+---
+
+>## persist
+
+`Description`: Persists the integrity object on disk
+
+`Info`: `persist` is a function designed to persist the created integrity object on disk. Usually, you will use `persist` whenever you create an `integrity` object. If the `dirPath` parameter is omitted, the `integrity` object will be persisted at the root directory, from where the function gets called. The `dirPath` can be an absolute or relative path.
+
+`Return Type`: `Promise<void>`
+
+`Parameters`:
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|data|string|||the data to persist|
+|dirPath|string|optional|`./`|the path of the directory to persist the data to|
+
+`Examples`
+
+- [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/persist-es5-js.md)
+- [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/persist-js-ts.md)
+
+---
+
+## Options
+
+### IntegrityOptions
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|cryptoOptions|ICryptoOptions|optional||the `crypto` options to use|
+|verbose|boolean|optional|true|whether the computed hashes are returned in a verbosely or non-verbosely structure|
+|exclude|string[]|optional|[]|the paths to be excluded, supports also `glob` expressions (positive & negative)|
+
+### ICryptoOptions
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|algorithm|string|optional|`md5`|the `crypto` algorithm to use|
+|encoding|HexBase64Latin1Encoding|optional|`hex`|the `crypto` encoding to use|
+
+---
+
+## Importation
+
+See [here](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/importation.md) how to import the library.

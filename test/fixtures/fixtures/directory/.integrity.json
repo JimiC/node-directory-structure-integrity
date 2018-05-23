@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "hashes": {
+    "directory": {
+      "contents": {
+        "anotherFileToHash.txt": "e85c09015e3adbd3b672197d65b0e011"
+      },
+      "hash": "27237daa8496e8be38e07687b0a0276f"
+    }
+  }
+}

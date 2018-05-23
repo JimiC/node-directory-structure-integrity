@@ -1,0 +1,38 @@
+version: #{build}
+environment:
+  # Define versions of Node.js
+  matrix:
+    - node_js: '' # latest node
+    - node_js: 9
+    - node_js: 8
+    - node_js: 7
+    - node_js: 6.14 # minimum
+clone_depth: 5
+matrix:
+  fast_finish: true
+  allow_failures:
+    - node_js: ''
+# Define platforms
+platform:
+  - x64
+cache:
+# - node_modules
+  - '%LOCALAPPDATA%\Yarn'
+install:
+  # Install the platform version of Node.js
+  - ps: Install-Product node $env:node_js $env:platform
+  # Output useful info for debugging
+  - node --version
+  - npm --version
+  - ps: $PSVersionTable.PSVersion
+  # Install modules
+  - yarn install
+before_test: 
+  - npm i codeclimate-test-reporter
+test_script:
+  # run test script 
+  - npm t
+after_test: 
+  # send coverage report 
+  - ps: Get-Content .\coverage\lcov.info | .\node_modules\.bin\codeclimate-test-reporter
+build: off
