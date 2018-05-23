@@ -7,7 +7,7 @@
     "email": "jimikar@gmail.com",
     "name": "Jimi (Dimitris) Charalampidis"
   },
-  "repository": "JimiC/ndsi",
+  "repository": "JimiC/node-directory-structure-integrity",
   "engines": {
     "node": ">=6.14"
   },
