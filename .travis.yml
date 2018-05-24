@@ -16,6 +16,7 @@ matrix:
   fast_finish: true
 cache: yarn
 before_install:
+  - if [[ $TRAVIS_COMMIT_MESSAGE =~ ^[[:digit:]\.]+ && $TRAVIS_BRANCH != $TRAVIS_TAG ]] ; then echo -e "Skiping due to existing tagged build" && exit 0 ; fi
   - curl -L https://yarnpkg.com/install.sh | bash
   - export PATH=$HOME/.yarn/bin:$PATH
 before_script:
