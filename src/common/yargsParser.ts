@@ -82,31 +82,31 @@ export class YargsParser {
   }
 
   public parse(): IParsedArgs {
-    const pargs = y.parse(process.argv.slice(2));
-    if (!pargs.output) {
-      pargs.output = fs.statSync(pargs.input).isFile()
-        ? path.dirname(pargs.input)
-        : pargs.input;
+    const _pargs = y.parse(process.argv.slice(2));
+    if (!_pargs.output) {
+      _pargs.output = fs.statSync(_pargs.input).isFile()
+        ? path.dirname(_pargs.input)
+        : _pargs.input;
     }
     return {
-      algorithm: pargs.algorithm,
-      command: pargs._[0],
-      encoding: pargs.encoding,
-      exclude: pargs.exclude,
-      inPath: pargs.input,
-      integrity: pargs.integrity,
-      outPath: pargs.output,
-      verbose: pargs.verbose,
+      algorithm: _pargs.algorithm,
+      command: _pargs._[0],
+      encoding: _pargs.encoding,
+      exclude: _pargs.exclude,
+      inPath: _pargs.input,
+      integrity: _pargs.integrity,
+      outPath: _pargs.output,
+      verbose: _pargs.verbose,
     };
   }
 
   private _validate(argv: y.Arguments): boolean {
-    let errorMsg = '';
+    let _errorMsg = '';
     if (!fs.existsSync(argv.input)) {
-      errorMsg = `ENOENT: no such file or directory, '${argv.input}'`;
+      _errorMsg = `ENOENT: no such file or directory, '${argv.input}'`;
     }
-    if (errorMsg) {
-      throw new Error(errorMsg);
+    if (_errorMsg) {
+      throw new Error(_errorMsg);
     }
     return true;
   }

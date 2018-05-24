@@ -43,19 +43,19 @@ export class Logger extends BaseLogger {
       return;
     }
 
-    const line = (typeof lineOrGroupId === 'number' && !Number.isNaN(lineOrGroupId))
+    const _line = (typeof lineOrGroupId === 'number' && !Number.isNaN(lineOrGroupId))
       ? lineOrGroupId as number
       : 1;
-    this.moveCursorTo(-line);
+    this.moveCursorTo(-_line);
     readline.clearLine(process.stdout, 0);
     process.stdout.write(`${this._getHeader(groupId)}${message}`);
-    this.moveCursorTo(line);
+    this.moveCursorTo(_line);
   }
 
   public spinnerLogStart(message: string, groupId?: string): ISpinner {
-    const line = this._countLines;
+    const _line = this._countLines;
     this.log(message, groupId);
-    return { timer: this._spin(message, groupId, line), line };
+    return { timer: this._spin(message, groupId, _line), line: _line };
   }
 
   public spinnerLogStop(spinner: ISpinner, message: string, groupId?: string): void {
@@ -90,14 +90,14 @@ export class Logger extends BaseLogger {
 
   private _spin(message: string, groupId: string | undefined, line: number): NodeJS.Timer {
     if (!process.stdout.isTTY) { return setImmediate(() => void 0); }
-    let i = 0;
+    let _index = 0;
     this._cursorHide();
     const iteration = () => {
-      const frame = this.frames[i = ++i % this.frames.length];
-      const msg = this.showSpinnerInFront
-        ? `${this._getHeader(groupId)}${frame}${message}`
-        : `${this._getHeader(groupId)}${message}${frame}`;
-      this.updateLog(msg, this._countLines - line);
+      const _frame = this.frames[_index = ++_index % this.frames.length];
+      const _msg = this.showSpinnerInFront
+        ? `${this._getHeader(groupId)}${_frame}${message}`
+        : `${this._getHeader(groupId)}${message}${_frame}`;
+      this.updateLog(_msg, this._countLines - line);
     };
     iteration();
     return setInterval(iteration, this.spinnerInterval);

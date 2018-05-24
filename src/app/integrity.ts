@@ -123,7 +123,7 @@ export class Integrity {
 
   /** @internal */
   private static _normalizeCryptoOptions(options?: ICryptoOptions): ICryptoOptions {
-    const check = (_options?: ICryptoOptions): ICryptoOptions | undefined => {
+    const _check = (_options?: ICryptoOptions): ICryptoOptions | undefined => {
       if (!_options) { return _options; }
       if (_options.algorithm && getHashes().indexOf(_options.algorithm.toLowerCase()) === -1) {
         throw new Error(`ENOSUP: Hash algorithm not supported: '${_options.algorithm}'`);
@@ -133,7 +133,7 @@ export class Integrity {
       }
       return _options;
     };
-    return check(options) || { algorithm: 'md5', encoding: 'hex' };
+    return _check(options) || { algorithm: 'md5', encoding: 'hex' };
   }
 
   /** @internal */
@@ -217,8 +217,8 @@ export class Integrity {
           return;
         }
         // verbosely directory hash
-        const subDir = Object.keys(_rootHash.contents).find(key => key === _array[1]);
-        _array = subDir ? _array.splice(1) : [];
+        const _subDir = Object.keys(_rootHash.contents).find(key => key === _array[1]);
+        _array = _subDir ? _array.splice(1) : [];
         return _findHash(_array, _rootHash.contents);
       };
       const _findRootIndex = async (_array: string[], _index: number): Promise<number> => {
