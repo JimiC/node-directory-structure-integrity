@@ -9,7 +9,6 @@
 
 **Pull Request:**
 
-1. Use the present tense in your commit message.
 1. Fill in the provided pull request template.
 1. Reference issues whenever possible.
 
@@ -19,6 +18,7 @@
 1. Follow the existing coding style.
 1. Obey the TSLint Rules.
 1. Add test cases for every new functionality.
+1. Follow commit message [guidelines](https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53).
 1. Make sure that the project builts before submitting a PR.
 
 Thanks for helping out! :smile:
