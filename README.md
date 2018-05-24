@@ -19,10 +19,16 @@ The hashes are computed using the `md5` algorithm and `hex` encoding by default,
 
 ## Instalation
 
-To install simple  type:
+To install as a dependency, simply type:
 
 ```sh
 npm i ndsi --save
+```
+
+To install for global use, simply type:
+
+```sh
+npm i ndsi -g
 ```
 
 ## Behavior
@@ -124,7 +130,7 @@ If you believe that the examples are incomplete or incorrect, please submit an i
 
 ## Contributing
 
-If you like to contribute make sure to check-out the [Contribution Guidelines](https://github.com/JimiC/node-directory-structure-integrity/blob/master/CONTRIBUTING.md) section.
+If you like to contribute make sure to check-out the [Contribution Guidelines](https://github.com/JimiC/node-directory-structure-integrity/blob/master/.github/CONTRIBUTING.md) section.
 
 ## License
 
