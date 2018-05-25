@@ -7,7 +7,14 @@
     "email": "jimikar@gmail.com",
     "name": "Jimi (Dimitris) Charalampidis"
   },
-  "repository": "JimiC/node-directory-structure-integrity",
+  "repository": {
+    "type": "git",
+    "url": "JimiC/node-directory-structure-integrity"
+  },
+  "bugs": {
+    "url": "https://github.com/JimiC/node-directory-structure-integrity/issues"
+  },
+  "homepage": "https://github.com/JimiC/node-directory-structure-integrity#readme",
   "engines": {
     "node": ">=6.14"
   },
