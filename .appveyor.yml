@@ -1,4 +1,6 @@
 version: #{build}
+image:
+  - Visual Studio 2017
 environment:
   # Define versions of Node.js
   matrix:
@@ -18,13 +20,26 @@ platform:
 cache:
 # - node_modules
   - '%LOCALAPPDATA%\Yarn'
-install:
+init:
   # Install the platform version of Node.js
   - ps: Install-Product node $env:node_js $env:platform
   # Output useful info for debugging
   - node --version
   - npm --version
+  - yarn --version
   - ps: $PSVersionTable.PSVersion
+install:
+  # Install the latest version of Yarn
+  - ps: >-
+      Write-Host "Installing Yarn!"
+
+      $webClient = New-Object Net.WebClient
+
+      $latestVersion = $webClient.DownloadString('https://yarnpkg.com/latest-version')
+
+      $webClient.DownloadFile("https://github.com/yarnpkg/yarn/releases/download/v$latestVersion/yarn-$latestVersion.msi", "$env:temp\yarn.msi")
+
+      cmd /c start /wait msiexec.exe /i $env:temp\yarn.msi /quiet /qn /norestart
   # Install modules
   - yarn install
 before_test: 
