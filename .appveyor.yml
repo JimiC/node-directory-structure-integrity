@@ -33,11 +33,7 @@ install:
   - ps: >-
       Write-Host "Installing Yarn!"
 
-      $webClient = New-Object Net.WebClient
-
-      $latestVersion = $webClient.DownloadString('https://yarnpkg.com/latest-version')
-
-      $webClient.DownloadFile("https://github.com/yarnpkg/yarn/releases/download/v$latestVersion/yarn-$latestVersion.msi", "$env:temp\yarn.msi")
+      (New-Object Net.WebClient).DownloadFile("https://yarnpkg.com/latest.msi", "$env:temp\yarn.msi")
 
       cmd /c start /wait msiexec.exe /i $env:temp\yarn.msi /quiet /qn /norestart
   # Install modules
