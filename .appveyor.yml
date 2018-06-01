@@ -27,15 +27,10 @@ init:
   - node --version
   - npm --version
   - yarn --version
-  - ps: $PSVersionTable.PSVersion
+  - ps: $PSVersionTable.PSVersion -f ''
 install:
   # Install the latest version of Yarn
-  - ps: >-
-      Write-Host "Installing Yarn!"
-
-      (New-Object Net.WebClient).DownloadFile("https://yarnpkg.com/latest.msi", "$env:temp\yarn.msi")
-
-      cmd /c start /wait msiexec.exe /i $env:temp\yarn.msi /quiet /qn /norestart
+  - ps: curl -o $env:temp\install.ps1 https://raw.githubusercontent.com/JimiC/ps-yarn-install/master/install.ps1 | powershell $env:temp\install.ps1
   # Install modules
   - yarn install
 before_test: 
@@ -45,5 +40,5 @@ test_script:
   - npm t
 after_test: 
   # send coverage report 
-  - ps: Get-Content .\coverage\lcov.info | .\node_modules\.bin\codeclimate-test-reporter
+  - ps: Get-Content .\coverage\lcov.info | & .\node_modules\.bin\codeclimate-test-reporter
 build: off
