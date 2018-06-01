@@ -42,7 +42,7 @@ export function promisify<T>(func: (...args: any[]) => any): (...args: any[]) =>
   if (!(typeof func === 'function')) {
     throw new TypeError('Argument to promisify must be a function');
   }
-  const _argumentNames = (func as IndexedObject)[promisifyArgumentNames];
+  const _argumentNames = (func as IndexedObject)[typeof promisifyArgumentNames];
   return (...args: any[]) => {
     return new Promise((res, rej) => {
       const _cb = (err: any, ...values: any[]) => {

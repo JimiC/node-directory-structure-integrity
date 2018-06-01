@@ -187,7 +187,7 @@ describe('Utils: tests', function () {
       it('to return all named arguments of the passed function',
         function () {
           const stub = sinon.stub().callsFake(cb => cb(null, 1, 2, 3));
-          (stub as IndexedObject)[utils.promisifyArgumentNames] = ['one', 'two', 'three'];
+          (stub as IndexedObject)[typeof utils.promisifyArgumentNames] = ['one', 'two', 'three'];
           return utils.promisify(stub)()
             .then(response => expect(response).to.eql({ one: 1, two: 2, three: 3 }));
         });
@@ -195,7 +195,7 @@ describe('Utils: tests', function () {
       it('to return named arguments of the passed function',
         function () {
           const stub = sinon.stub().callsFake(cb => cb(null, 1, 2, 3));
-          (stub as IndexedObject)[utils.promisifyArgumentNames] = ['one', 'two'];
+          (stub as IndexedObject)[typeof utils.promisifyArgumentNames] = ['one', 'two'];
           return utils.promisify(stub)()
             .then(response => expect(response).to.eql({ one: 1, two: 2 }));
         });
