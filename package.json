@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/JimiC/node-directory-structure-integrity#readme",
   "engines": {
-    "node": ">=6.14"
+    "node": ">=6"
   },
   "keywords": [
     "node",

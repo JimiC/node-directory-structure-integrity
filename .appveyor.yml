@@ -8,7 +8,7 @@ environment:
     - node_js: 9
     - node_js: 8
     - node_js: 7
-    - node_js: 6.14 # minimum
+    - node_js: 6 # minimum
 clone_depth: 5
 matrix:
   fast_finish: true
@@ -33,12 +33,12 @@ install:
   - ps: curl -o $env:temp\install.ps1 https://raw.githubusercontent.com/JimiC/ps-yarn-install/master/install.ps1 | powershell $env:temp\install.ps1
   # Install modules
   - yarn install
-before_test: 
+before_test:
   - npm i codeclimate-test-reporter
 test_script:
-  # run test script 
+  # run test script
   - npm t
-after_test: 
-  # send coverage report 
+after_test:
+  # send coverage report
   - ps: Get-Content .\coverage\lcov.info | & .\node_modules\.bin\codeclimate-test-reporter
 build: off
