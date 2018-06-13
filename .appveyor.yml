@@ -34,11 +34,11 @@ install:
   # Install modules
   - yarn install
 before_test:
-  - npm i codeclimate-test-reporter
+  - npm i codeclimate-test-reporter --no-save
 test_script:
   # run test script
   - npm t
 after_test:
   # send coverage report
-  - ps: Get-Content .\coverage\lcov.info | & .\node_modules\.bin\codeclimate-test-reporter
+  - ps: If ($env:CODECLIMATE_REPO_TOKEN -ne $null) { gc .\coverage\lcov.info | & .\node_modules\.bin\codeclimate-test-reporter }
 build: off
