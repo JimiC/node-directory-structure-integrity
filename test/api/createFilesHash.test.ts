@@ -3,6 +3,7 @@
 import { expect } from 'chai';
 import path from 'path';
 import { Integrity } from '../../src/app/integrity';
+import * as utils from '../../src/common/utils';
 
 describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
 
@@ -16,18 +17,16 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
     let anotherFileToHashFilePath: string;
     let otherFileToHashFilePath: string;
     let fileToHashFilePath: string;
-    let md5HexRegexPattern: RegExp;
-    let base64RegexPattern: RegExp;
-    let shaHexRegexPattern: RegExp;
+    let md5Length: number;
+    let sha1Length: number;
 
     before(function () {
       anotherFileToHashFilename = 'anotherFileToHash.txt';
       otherFileToHashFilename = 'otherFileToHash.txt';
       fileToHashFilename = 'fileToHash.txt';
 
-      md5HexRegexPattern = /^[a-f0-9]{32}$/;
-      base64RegexPattern = /^(?:[A-Za-z0-9+/]{4})+(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-      shaHexRegexPattern = /^[a-f0-9]{40}$/;
+      md5Length = 32;
+      sha1Length = 40;
     });
 
     beforeEach(function () {
@@ -63,9 +62,13 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
         const sut = await Integrity.createFilesHash(files);
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-          .and.match(md5HexRegexPattern).and.to.equal('e85c09015e3adbd3b672197d65b0e011');
+        .and.that.to.match(utils.hexRegexPattern)
+        .and.that.to.have.lengthOf(md5Length)
+        .and.to.equal('e85c09015e3adbd3b672197d65b0e011');
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
-          .and.match(md5HexRegexPattern).and.to.equal('aab25b0f1789fe88955cee6d2370e7b7');
+        .and.that.to.match(utils.hexRegexPattern)
+        .and.that.to.have.lengthOf(md5Length)
+        .and.to.equal('aab25b0f1789fe88955cee6d2370e7b7');
       });
 
     it('to return an \'md5\' and \'base64\' encoded hash JSON',
@@ -74,9 +77,11 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
         const sut = await Integrity.createFilesHash(files, { encoding: 'base64' });
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-          .and.match(base64RegexPattern).and.to.equal('6FwJAV4629O2chl9ZbDgEQ==');
+          .and.match(utils.base64RegexPattern)
+          .and.to.equal('6FwJAV4629O2chl9ZbDgEQ==');
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
-          .and.match(base64RegexPattern).and.to.equal('qrJbDxeJ/oiVXO5tI3Dntw==');
+          .and.match(utils.base64RegexPattern)
+          .and.to.equal('qrJbDxeJ/oiVXO5tI3Dntw==');
       });
 
     it('to return an \'sha1\' and \'hex\' encoded hash JSON',
@@ -85,9 +90,13 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
         const sut = await Integrity.createFilesHash(files, { algorithm: 'sha1' });
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-          .and.match(shaHexRegexPattern).and.to.equal('119db0d2bb1299704e75d228cf6228388bb119a4');
+        .and.to.match(utils.hexRegexPattern)
+        .and.that.to.have.lengthOf(sha1Length)
+        .and.to.equal('119db0d2bb1299704e75d228cf6228388bb119a4');
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
-          .and.match(shaHexRegexPattern).and.to.equal('07c149e2e2a01c449280cbc9532ae3de2c76b86f');
+        .and.to.match(utils.hexRegexPattern)
+        .and.that.to.have.lengthOf(sha1Length)
+        .and.to.equal('07c149e2e2a01c449280cbc9532ae3de2c76b86f');
       });
 
     it('to return an \'sha1\' and \'base64\' encoded hash JSON',
@@ -96,9 +105,11 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
         const sut = await Integrity.createFilesHash(files, { algorithm: 'sha1', encoding: 'base64' });
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-          .and.match(base64RegexPattern).and.to.equal('EZ2w0rsSmXBOddIoz2IoOIuxGaQ=');
+          .and.match(utils.base64RegexPattern)
+          .and.to.equal('EZ2w0rsSmXBOddIoz2IoOIuxGaQ=');
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
-          .and.match(base64RegexPattern).and.to.equal('B8FJ4uKgHESSgMvJUyrj3ix2uG8=');
+          .and.match(utils.base64RegexPattern)
+          .and.to.equal('B8FJ4uKgHESSgMvJUyrj3ix2uG8=');
       });
 
   });

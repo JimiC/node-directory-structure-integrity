@@ -4,7 +4,7 @@ import { createHash, getHashes, Hash, HexBase64Latin1Encoding } from 'crypto';
 import fs from 'fs';
 import mm from 'minimatch';
 import path from 'path';
-import { asyncForEach, getAbsolutePath, parseJSON, promisify, sortObject } from '../common/utils';
+import * as utils from '../common/utils';
 import { ICryptoOptions } from '../interfaces/cryptoOptions';
 import { IndexedObject } from '../interfaces/indexedObject';
 import { IntegrityOptions } from '../interfaces/integrityOptions';
@@ -13,41 +13,65 @@ import { INormalizedIntegrityOptions } from '../interfaces/normalizedIntegrityOp
 export class Integrity {
   public static readonly CurrentSchemaVersion = '1';
 
-  public static async check(inPath: string, integrity: string, options?: IntegrityOptions): Promise<boolean> {
-    if (!inPath || typeof inPath !== 'string' || !integrity || typeof integrity !== 'string') { return false; }
-    const _hashObj = await Integrity.create(inPath, options);
+  public static async check(fileOrDirPath: string, integrity: string): Promise<boolean>;
+  public static async check(fileOrDirPath: string, integrity: string, options?: IntegrityOptions): Promise<boolean>;
+  public static async check(fileOrDirPath: string, integrity: string, detectOptions?: boolean): Promise<boolean>;
+  public static async check(
+    fileOrDirPath: string, integrity: string, options?: IntegrityOptions, detectOptions?: boolean): Promise<boolean>;
+  public static async check(
+    fileOrDirPath: string,
+    integrity: string,
+    optionsOrDetectOptions?: IntegrityOptions | boolean,
+    detectOptions?: boolean): Promise<boolean> {
+    if (!fileOrDirPath || typeof fileOrDirPath !== 'string' || !integrity || typeof integrity !== 'string') {
+      return false;
+    }
+    let _options: IntegrityOptions | undefined = optionsOrDetectOptions as IntegrityOptions;
+    if (typeof optionsOrDetectOptions === 'boolean') {
+      _options = undefined;
+      detectOptions = optionsOrDetectOptions;
+    }
+    if (detectOptions) {
+      const exclude = _options ? _options.exclude : undefined;
+      _options = await this._detectOptions(fileOrDirPath, integrity);
+      _options.exclude = exclude;
+    }
+    const _hashObj = await Integrity.create(fileOrDirPath, _options);
+    let _integrityObj: IndexedObject;
     // 'integrity' is a file or directory path
     if (await this._exists(integrity)) {
-      return this._handlePathCheck(integrity, _hashObj, inPath);
+      integrity = await this._pathCheck(integrity);
+      const _content = await this._readFile(integrity, 'utf8');
+      _integrityObj = utils.parseJSON(_content) as IndexedObject;
+      await this._validate(_integrityObj);
+      return this._verify(_hashObj, _integrityObj, fileOrDirPath);
     }
     // 'integrity' is a stringified JSON
-    let _integrityObj = parseJSON(integrity) as IndexedObject;
-    if (_integrityObj) {
-      await this._validate(_integrityObj);
-      return this._verify(_hashObj, _integrityObj);
-    }
+    _integrityObj = utils.parseJSON(integrity) as IndexedObject;
     // 'integrity' is a hash
-    _integrityObj = {
-      hashes: {
-        [path.basename(inPath)]: integrity,
-      },
-      version: this.CurrentSchemaVersion,
-    };
+    if (!_integrityObj) {
+      _integrityObj = {
+        hashes: {
+          [path.basename(fileOrDirPath)]: integrity,
+        },
+        version: this.CurrentSchemaVersion,
+      };
+    }
     await this._validate(_integrityObj);
     return this._verify(_hashObj, _integrityObj);
   }
 
-  public static async create(inPath: string, options?: IntegrityOptions): Promise<IndexedObject> {
-    const _ls: fs.Stats = await this._lstat(inPath);
+  public static async create(fileOrDirPath: string, options?: IntegrityOptions): Promise<IndexedObject> {
+    const _ls: fs.Stats = await this._lstat(fileOrDirPath);
     const _obj: IndexedObject = {};
     if (_ls.isDirectory()) {
       _obj.version = this.CurrentSchemaVersion;
-      _obj.hashes = await Integrity.createDirHash(inPath, options);
+      _obj.hashes = await Integrity.createDirHash(fileOrDirPath, options);
     }
     if (_ls.isFile()) {
       const { cryptoOptions } = this._normalizeOptions(options);
       _obj.version = this.CurrentSchemaVersion;
-      _obj.hashes = await Integrity.createFileHash(inPath, cryptoOptions);
+      _obj.hashes = await Integrity.createFileHash(fileOrDirPath, cryptoOptions);
     }
     return _obj;
   }
@@ -91,7 +115,7 @@ export class Integrity {
     const _callback = async (file: string, _obj: IndexedObject): Promise<void> => {
       Object.assign(_obj, await this.createFileHash(file, options));
     };
-    await asyncForEach(filenames, file => _callback(file, _hash));
+    await utils.asyncForEach(filenames, file => _callback(file, _hash));
     return _hash;
   }
 
@@ -107,25 +131,90 @@ export class Integrity {
   private static _defaultExclutions = [`${Integrity._integrityFilename}`];
 
   /** @internal */
-  private static _exists = promisify<boolean>(fs.exists);
+  private static _exists = utils.promisify<boolean>(fs.exists);
 
   /** @internal */
-  private static _lstat = promisify<fs.Stats>(fs.lstat);
+  private static _lstat = utils.promisify<fs.Stats>(fs.lstat);
 
   /** @internal */
-  private static _readFile = promisify<string | Buffer>(fs.readFile);
+  private static _readFile = utils.promisify<string | Buffer>(fs.readFile);
 
   /** @internal */
-  private static _readdir = promisify<string[]>(fs.readdir);
+  private static _readdir = utils.promisify<string[]>(fs.readdir);
 
   /** @internal */
-  private static _writeFile = promisify<void>(fs.writeFile);
+  private static _writeFile = utils.promisify<void>(fs.writeFile);
+
+  /** @internal */
+  private static async _detectOptions(inPath: string, integrity: string): Promise<IntegrityOptions> {
+    const _getHash = (hashObj: IndexedObject): string => {
+      if (!hashObj || !hashObj.hashes) { return ''; }
+      const _first = hashObj.hashes[path.basename(inPath)];
+      return (_first && _first.hash) || _first;
+    };
+    let _hashObj: IndexedObject;
+    if (await this._exists(integrity)) {
+      integrity = await this._pathCheck(integrity);
+      const _content = await this._readFile(integrity, 'utf8');
+      _hashObj = utils.parseJSON(_content) as IndexedObject;
+    } else {
+      _hashObj = utils.parseJSON(integrity) as IndexedObject;
+      if (!_hashObj) {
+        _hashObj = {
+          hashes: {
+            [path.basename(inPath)]: integrity,
+          },
+          version: this.CurrentSchemaVersion,
+        };
+      }
+    }
+    const _options: IntegrityOptions = {};
+    const _hash = _getHash(_hashObj);
+    if (!_hash) {
+      return _options;
+    }
+    // find encoding
+    const _encoding: HexBase64Latin1Encoding | undefined =
+      utils.hexRegexPattern.test(_hash)
+        ? 'hex'
+        : utils.base64RegexPattern.test(_hash)
+          ? 'base64'
+          : utils.latin1RegexPattern.test(_hash)
+            ? 'latin1'
+            : undefined;
+    if (!_encoding) {
+      return _options;
+    }
+    // detect verbosity
+    _options.verbose = !!_hashObj.hashes[path.basename(inPath)].hash;
+    // find algorithm
+    _options.cryptoOptions = { encoding: _encoding };
+    for (const algorithm of getHashes()) {
+      const _testOptions = {
+        cryptoOptions: { algorithm, encoding: _options.cryptoOptions.encoding },
+        verbose: _options.verbose,
+      };
+      let _testHashObj;
+      try {
+        _testHashObj = await this.create(inPath, _testOptions);
+      } catch (error) {
+        continue;
+      }
+      const _vHash = _getHash(_testHashObj);
+      if (!_vHash) { continue; }
+      if (_vHash === _hash) {
+        _options.cryptoOptions.algorithm = algorithm;
+        break;
+      }
+    }
+    return _options;
+  }
 
   /** @internal */
   private static _normalizeCryptoOptions(options?: ICryptoOptions): ICryptoOptions {
     const _check = (_options?: ICryptoOptions): ICryptoOptions | undefined => {
       if (!_options) { return _options; }
-      if (_options.algorithm && getHashes().indexOf(_options.algorithm.toLowerCase()) === -1) {
+      if (_options.algorithm && !utils.isSupportedHash(_options.algorithm)) {
         throw new Error(`ENOSUP: Hash algorithm not supported: '${_options.algorithm}'`);
       }
       if (_options.encoding && ['hex', 'base64', 'latin1'].indexOf(_options.encoding.toLowerCase()) === -1) {
@@ -170,25 +259,18 @@ export class Integrity {
   }
 
   /** @internal */
-  private static async _handlePathCheck(integrity: string, hashObj: IndexedObject, inPath: string): Promise<boolean> {
-    const _ls: fs.Stats = await this._lstat(integrity);
+  private static async _pathCheck(integrityPath: string): Promise<string> {
+    const _ls: fs.Stats = await this._lstat(integrityPath);
     if (_ls.isDirectory()) {
-      integrity = path.join(integrity, this._integrityFilename);
+      return path.join(integrityPath, this._integrityFilename);
     }
     if (_ls.isFile()) {
-      if (path.basename(integrity) !== this._integrityFilename) {
+      if (path.basename(integrityPath) !== this._integrityFilename) {
         throw new Error(`EINVNAME: filename must be '${this._integrityFilename}'`);
       }
+      return integrityPath;
     }
-    if (await this._exists(integrity)) {
-      const _content = await this._readFile(integrity, 'utf8');
-      const _signature = parseJSON(_content) as IndexedObject;
-      if (_signature) {
-        await this._validate(_signature);
-        return this._verify(hashObj, _signature, inPath);
-      }
-    }
-    return false;
+    throw new Error(`ENOSUP: path not supported: '${integrityPath}'`);
   }
 
   /** @internal */
@@ -197,7 +279,7 @@ export class Integrity {
       throw new Error('EINVER: Incompatible versions check');
     }
     const _equals = (obj1: IndexedObject, obj2: IndexedObject): boolean => {
-      return JSON.stringify(sortObject(obj1)) === JSON.stringify(sortObject(obj2));
+      return JSON.stringify(utils.sortObject(obj1)) === JSON.stringify(utils.sortObject(obj2));
     };
     const _deepEquals = async (_path?: string): Promise<boolean> => {
       if (!_path) { return false; }
@@ -222,7 +304,7 @@ export class Integrity {
         return _findHash(_array, _rootHash.contents);
       };
       const _findRootIndex = async (_array: string[], _index: number): Promise<number> => {
-        const _dirPath = getAbsolutePath(_array, _index);
+        const _dirPath = utils.getAbsolutePath(_array, _index);
         const _dirHash = await this.createDirHash(_dirPath);
         const _integrityDirHash: string | IndexedObject = _hashes[_array[_index]];
         const _dirHashes: IndexedObject = _dirHash[_array[_index]];
@@ -294,10 +376,9 @@ export class Integrity {
         }
       };
       _hash.update(path.basename(_dirPath));
-      await asyncForEach(await this._readdir(_dirPath), _callback);
+      await utils.asyncForEach(await this._readdir(_dirPath), _callback);
       return _hash;
     };
-
     if (options.exclude.some(excl => this._match(dirPath, excl))) {
       return '';
     }
@@ -323,7 +404,8 @@ export class Integrity {
         }
       };
       const _hashObj: IndexedObject = { contents: {}, hash: await this._computeHash(_dirPath, options) };
-      await asyncForEach(await this._readdir(_dirPath), (filename: string) => _callback(filename, _hashObj.contents));
+      await utils.asyncForEach(await this._readdir(_dirPath),
+        (filename: string) => _callback(filename, _hashObj.contents));
       return _hashObj;
     };
     if (options.exclude.some(excl => this._match(dirPath, excl))) {

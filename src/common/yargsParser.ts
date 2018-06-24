@@ -46,6 +46,11 @@ export class YargsParser {
   };
 
   private readonly _checkOptions: { [key: string]: y.Options } = {
+    d: {
+      alias: 'detect',
+      description: 'Detect the options used to create the integrity file',
+      type: 'boolean',
+    },
     i: {
       alias: 'integrity',
       demandOption: true,
@@ -91,6 +96,7 @@ export class YargsParser {
     return {
       algorithm: _pargs.algorithm,
       command: _pargs._[0],
+      detect: _pargs.detect,
       encoding: _pargs.encoding,
       exclude: _pargs.exclude,
       inPath: _pargs.input,

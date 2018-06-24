@@ -1,7 +1,8 @@
 /** @internal */
 export interface IParsedArgs {
-  command: string;
   algorithm: string;
+  command: string;
+  detect: boolean;
   encoding: string;
   exclude: string[];
   inPath: string;

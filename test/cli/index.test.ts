@@ -23,6 +23,7 @@ describe('CLI: tests', function () {
     pargs = {
       algorithm: 'md5',
       command: '',
+      detect: false,
       encoding: 'hex',
       exclude: [],
       inPath: '',

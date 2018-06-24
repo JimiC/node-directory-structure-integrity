@@ -27,6 +27,7 @@ All `API` calls are `static` members of the `Integrity` class.
 |inPath|string|||the path of the file or directory to check|
 |integrity|string|||the path of the directory containing the integrity file or the path to the integrity file or a stringified integrity JSON or a hash string, to check against|
 |options|IntegrityOptions|optional|see [options](#options) section|the `integrity` options to use|
+|detectOptions|boolean|optional||detect the options used to create the `integrity` object|
 
 `Examples`
 

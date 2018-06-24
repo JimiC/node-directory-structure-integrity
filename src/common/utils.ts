@@ -1,5 +1,20 @@
+import { getHashes } from 'crypto';
 import path from 'path';
 import { IndexedObject } from '../interfaces/indexedObject';
+
+/** @internal */
+export const hexRegexPattern = /^(?:[a-f0-9])+$/;
+
+/** @internal */
+export const base64RegexPattern = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+/** @internal */
+export const latin1RegexPattern = /^(?:[\x00-\xFF])+$/;
+
+/** @internal */
+export function isSupportedHash(algorithm: string): boolean {
+  return getHashes().some(hash => hash.toUpperCase() === algorithm.toUpperCase());
+}
 
 /** @internal */
 export function getAbsolutePath(array: string[], index: number): string {

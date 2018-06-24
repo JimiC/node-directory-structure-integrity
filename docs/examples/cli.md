@@ -8,6 +8,12 @@
 ndsi check -p ./ -i ./.integrity.json
 ```
 
+> Check the integrity of the root directory, using a root 'integrity' file and auto detecting options
+
+```sh
+ndsi check -p ./ -i .integrity.json -d
+```
+
 ---
 
 ## `create`
