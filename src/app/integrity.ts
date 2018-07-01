@@ -275,6 +275,7 @@ export class Integrity {
 
   /** @internal */
   private static async _verify(hashedObj: IndexedObject, integrity: IndexedObject, inPath?: string): Promise<boolean> {
+    if (!hashedObj) { return false; }
     if (hashedObj.version !== integrity.version) {
       throw new Error('EINVER: Incompatible versions check');
     }

@@ -655,71 +655,31 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
       });
 
-      context('and the integrity hash object has', function () {
+      context('to fail integrity check', function () {
 
-        context('not been created with the default algorithm', function () {
+        context('when the creation of the hash object', function () {
 
-          context('to fail integrity check', function () {
+          it('throws an error',
+            async function () {
+              const createStub = sandbox.stub(Integrity, 'create').throws();
+              const hashObj = '{"version":"1","hashes":{"fixtures":"\\fÇ8\\u0011ÌúIÄÎ(Lo]¹tÁ"}}';
 
-            context('when the creation of the testing hash object', function () {
-
-              it('throws an error',
-                async function () {
-                  const resolvedHashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
-                  const createStub = sandbox.stub(Integrity, 'create').throws()
-                    .onCall(46).resolves(JSON.parse(resolvedHashObj));
-                  const hashObj = '{"version":"1","hashes":{"fixtures":"\\fÇ8\\u0011ÌúIÄÎ(Lo]¹tÁ"}}';
-                  const sut = await Integrity.check(fixturesDirPath, hashObj, true);
-                  expect(createStub.called).to.be.true;
-                  expect(sut).to.be.a('boolean').and.to.be.false;
-                });
-
-              it('returns nothing',
-                async function () {
-                  const resolvedHashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
-                  const createStub = sandbox.stub(Integrity, 'create').returns(undefined)
-                    .onCall(46).resolves(JSON.parse(resolvedHashObj));
-                  const hashObj = '{"version":"1","hashes":{"fixtures":"\\fÇ8\\u0011ÌúIÄÎ(Lo]¹tÁ"}}';
-                  const sut = await Integrity.check(fixturesDirPath, hashObj, true);
-                  expect(createStub.called).to.be.true;
-                  expect(sut).to.be.a('boolean').and.to.be.false;
-                });
-
+              try {
+                await Integrity.check(fixturesDirPath, hashObj, true);
+              } catch (error) {
+                expect(createStub.called).to.be.true;
+                expect(error).to.be.an.instanceof(Error).and.to.match(/Error/);
+              }
             });
 
-          });
-
-        });
-
-        context('been created with the default algorithm', function () {
-
-          context('to pass integrity check', function () {
-
-            context('when the creation of the testing hash object', function () {
-
-              it('throws an error',
-                async function () {
-                  const hashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
-                  const createStub = sandbox.stub(Integrity, 'create').throws()
-                    .onCall(46).resolves(JSON.parse(hashObj));
-                  const sut = await Integrity.check(fixturesDirPath, hashObj, true);
-                  expect(createStub.called).to.be.true;
-                  expect(sut).to.be.a('boolean').and.to.be.true;
-                });
-
-              it('returns nothing',
-                async function () {
-                  const hashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
-                  const createStub = sandbox.stub(Integrity, 'create').returns(undefined)
-                    .onCall(46).resolves(JSON.parse(hashObj));
-                  const sut = await Integrity.check(fixturesDirPath, hashObj, true);
-                  expect(createStub.called).to.be.true;
-                  expect(sut).to.be.a('boolean').and.to.be.true;
-                });
-
+          it('returns nothing',
+            async function () {
+              const createStub = sandbox.stub(Integrity, 'create').returns(undefined);
+              const hashObj = '{"version":"1","hashes":{"fixtures":"\\fÇ8\\u0011ÌúIÄÎ(Lo]¹tÁ"}}';
+              const sut = await Integrity.check(fixturesDirPath, hashObj, true);
+              expect(createStub.called).to.be.true;
+              expect(sut).to.be.a('boolean').and.to.be.false;
             });
-
-          });
 
         });
 
