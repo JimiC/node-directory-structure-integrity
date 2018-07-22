@@ -1,6 +1,6 @@
 {
   "name": "ndsi",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "description": "Node.js utility tool for creating and checking files and directories structure integrity",
   "license": "MIT",
   "author": {
