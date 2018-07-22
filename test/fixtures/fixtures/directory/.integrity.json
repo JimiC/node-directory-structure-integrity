@@ -3,9 +3,9 @@
   "hashes": {
     "directory": {
       "contents": {
-        "anotherFileToHash.txt": "e85c09015e3adbd3b672197d65b0e011"
+        "anotherFileToHash.txt": "sha1-EZ2w0rsSmXBOddIoz2IoOIuxGaQ="
       },
-      "hash": "27237daa8496e8be38e07687b0a0276f"
+      "hash": "sha1-CXSQtBImc4fcCOIs+oCwjltnl9Y="
     }
   }
 }

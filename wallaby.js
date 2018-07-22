@@ -2,6 +2,7 @@ module.exports = {
   files: [
     "src/**/*.ts",
     "src/schemas/**/*.json",
+    "test/helper.ts",
     "test/fixtures/**/*",
     "test/fixtures/**/.integrity.json",
     "package.json"

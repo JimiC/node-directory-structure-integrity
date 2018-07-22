@@ -3,10 +3,10 @@
   "hashes": {
     "directory": {
       "contents": {
-        "anotherFileToHash.txt": "e85c09015e3adbd3b672197d65b0e011",
-        "otherFileToHash.txt": "aab25b0f1789fe88955cee6d2370e7b7"
+        "anotherFileToHash.txt": "sha1-EZ2w0rsSmXBOddIoz2IoOIuxGaQ=",
+        "otherFileToHash.txt": "sha1-B8FJ4uKgHESSgMvJUyrj3ix2uG8="
       },
-      "hash": "b5d58874a8e6c2b2d6a1f179b4ee7d0f"
+      "hash": "sha1-2Kmnn7YpoFCNeNAAr4Xu9Eo4nLQ="
     }
   }
 }

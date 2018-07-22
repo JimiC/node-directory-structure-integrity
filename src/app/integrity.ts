@@ -8,6 +8,7 @@ import * as utils from '../common/utils';
 import { ICryptoOptions } from '../interfaces/cryptoOptions';
 import { IndexedObject } from '../interfaces/indexedObject';
 import { IntegrityOptions } from '../interfaces/integrityOptions';
+import { INormalizedCryptoOptions } from '../interfaces/normalizedCryptoOptions';
 import { INormalizedIntegrityOptions } from '../interfaces/normalizedIntegrityOptions';
 
 export class Integrity {
@@ -106,8 +107,10 @@ export class Integrity {
     if (path.basename(filePath) === this._integrityFilename) {
       throw new Error(`ENOTALW: file not allowed, '${path.basename(filePath)}'`);
     }
-    const { algorithm = 'md5', encoding = 'hex' } = this._normalizeCryptoOptions(options);
-    return { [path.basename(filePath)]: await this._computeStreamHash(filePath, createHash(algorithm), encoding) };
+    const { algorithm, encoding } = this._normalizeCryptoOptions(options);
+    return {
+      [path.basename(filePath)]: await this._computeStreamHash(filePath, createHash(algorithm), algorithm, encoding),
+    };
   }
 
   public static async createFilesHash(filenames: string[], options?: ICryptoOptions): Promise<IndexedObject> {
@@ -153,12 +156,15 @@ export class Integrity {
       return (_first && _first.hash) || _first;
     };
     let _hashObj: IndexedObject;
+    // 'integrity' is a file or directory path
     if (await this._exists(integrity)) {
       integrity = await this._pathCheck(integrity);
       const _content = await this._readFile(integrity, 'utf8');
       _hashObj = utils.parseJSON(_content) as IndexedObject;
     } else {
+      // 'integrity' is a stringified JSON
       _hashObj = utils.parseJSON(integrity) as IndexedObject;
+      // 'integrity' is a hash
       if (!_hashObj) {
         _hashObj = {
           hashes: {
@@ -170,16 +176,17 @@ export class Integrity {
     }
     const _options: IntegrityOptions = {};
     const _hash = _getHash(_hashObj);
-    if (!_hash) {
+    if (!_hash || typeof _hash !== 'string') {
       return _options;
     }
+    const _integrityMembers = _hash.split('-');
     // find encoding
     const _encoding: HexBase64Latin1Encoding | undefined =
-      utils.hexRegexPattern.test(_hash)
+      utils.hexRegexPattern.test(_integrityMembers[1])
         ? 'hex'
-        : utils.base64RegexPattern.test(_hash)
+        : utils.base64RegexPattern.test(_integrityMembers[1])
           ? 'base64'
-          : utils.latin1RegexPattern.test(_hash)
+          : utils.latin1RegexPattern.test(_integrityMembers[1])
             ? 'latin1'
             : undefined;
     if (!_encoding) {
@@ -188,31 +195,15 @@ export class Integrity {
     // detect verbosity
     _options.verbose = !!_hashObj.hashes[path.basename(inPath)].hash;
     // find algorithm
-    _options.cryptoOptions = { encoding: _encoding };
-    for (const algorithm of getHashes()) {
-      const _testOptions = {
-        cryptoOptions: { algorithm, encoding: _options.cryptoOptions.encoding },
-        verbose: _options.verbose,
-      };
-      let _testHashObj;
-      try {
-        _testHashObj = await this.create(inPath, _testOptions);
-      } catch (error) {
-        continue;
-      }
-      const _vHash = _getHash(_testHashObj);
-      if (!_vHash) { continue; }
-      if (_vHash === _hash) {
-        _options.cryptoOptions.algorithm = algorithm;
-        break;
-      }
-    }
+    const _algorithm = getHashes().find(algorithm => algorithm === _integrityMembers[0]);
+    // assign crypto options
+    _options.cryptoOptions = { algorithm: _algorithm, encoding: _encoding };
     return _options;
   }
 
   /** @internal */
-  private static _normalizeCryptoOptions(options?: ICryptoOptions): ICryptoOptions {
-    const _check = (_options?: ICryptoOptions): ICryptoOptions | undefined => {
+  private static _normalizeCryptoOptions(options?: ICryptoOptions): INormalizedCryptoOptions {
+    const _check = (_options?: ICryptoOptions): INormalizedCryptoOptions | undefined => {
       if (!_options) { return _options; }
       if (_options.algorithm && !utils.isSupportedHash(_options.algorithm)) {
         throw new Error(`ENOSUP: Hash algorithm not supported: '${_options.algorithm}'`);
@@ -220,9 +211,9 @@ export class Integrity {
       if (_options.encoding && ['hex', 'base64', 'latin1'].indexOf(_options.encoding.toLowerCase()) === -1) {
         throw new Error(`ENOSUP: Hash encoding not supported: '${_options.encoding}'`);
       }
-      return _options;
+      return { algorithm: _options.algorithm || 'sha1', encoding: _options.encoding || 'base64' };
     };
-    return _check(options) || { algorithm: 'md5', encoding: 'hex' };
+    return _check(options) || { algorithm: 'sha1', encoding: 'base64' };
   }
 
   /** @internal */
@@ -345,11 +336,11 @@ export class Integrity {
   }
 
   /** @internal */
-  private static _computeStreamHash(filePath: string, hash: Hash, encoding?: HexBase64Latin1Encoding)
-    : Promise<string | Buffer> {
+  private static _computeStreamHash(filePath: string, hash: Hash, algorithm: string, encoding?: HexBase64Latin1Encoding)
+    : Promise<string> {
     return new Promise((res, rej) => {
       const _result = () => res(encoding
-        ? hash.digest(encoding)
+        ? `${algorithm}-${hash.digest(encoding)}`
         : '');
       hash.update(path.basename(filePath));
       fs.createReadStream(filePath)
@@ -361,8 +352,8 @@ export class Integrity {
 
   /** @internal */
   private static async _computeHash(dirPath: string, options: INormalizedIntegrityOptions): Promise<string> {
-    const { algorithm = 'md5', encoding = 'hex' } = this._normalizeCryptoOptions(options.cryptoOptions);
-    const _recurse = async (_dirPath: string, _hash: Hash): Promise<Hash> => {
+    const { algorithm, encoding } = this._normalizeCryptoOptions(options.cryptoOptions);
+    const _recurse = async (_dirPath: string, _hash: Hash, _algorithm: string): Promise<Hash> => {
       const _callback = async (filename: string): Promise<void> => {
         const _curPath = path.join(_dirPath, filename);
         if (this._excludePath(_curPath, options)) {
@@ -370,10 +361,10 @@ export class Integrity {
         }
         const _curPathStats: fs.Stats = await this._lstat(_curPath);
         if (_curPathStats.isDirectory()) {
-          await _recurse(_curPath, _hash);
+          await _recurse(_curPath, _hash, _algorithm);
         }
         if (_curPathStats.isFile()) {
-          await this._computeStreamHash(_curPath, _hash);
+          await this._computeStreamHash(_curPath, _hash, _algorithm);
         }
       };
       _hash.update(path.basename(_dirPath));
@@ -383,8 +374,8 @@ export class Integrity {
     if (options.exclude.some(excl => this._match(dirPath, excl))) {
       return '';
     }
-    const _finalHash = await _recurse(dirPath, createHash(algorithm));
-    return _finalHash.digest(encoding);
+    const _finalHash = await _recurse(dirPath, createHash(algorithm), algorithm);
+    return `${algorithm}-${_finalHash.digest(encoding)}`;
   }
 
   /** @internal */

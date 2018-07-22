@@ -229,14 +229,14 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
             it('provided a hash object (JSON)',
               async function () {
-                const hashObj = '{"version":"1","hashes":{"fileToHash.txt":"7a3d5b475bd07ae9041fab2a133f40c4"}}';
+                const hashObj = '{"version":"1","hashes":{"fileToHash.txt":"sha1-H58mYNjbMJTkiNvvNfj2YKl3ck0="}}';
                 const sut = await Integrity.check(fileToHashFilePath, hashObj);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
 
             it('provided a hash string',
               async function () {
-                const hash = '7a3d5b475bd07ae9041fab2a133f40c4';
+                const hash = 'sha1-H58mYNjbMJTkiNvvNfj2YKl3ck0=';
                 const sut = await Integrity.check(fileToHashFilePath, hash);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -280,14 +280,14 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
             it('provided a hash object (JSON)',
               async function () {
-                const hashObj = '{"version":"1","hashes":{"fileToHash.txt":"9fd7c786e27af1eac638d0747a9ed79f"}}';
+                const hashObj = '{"version":"1","hashes":{"fileToHash.txt":"sha1-t56X7IQ267Hza0qjpSpqb9UPcfE="}}';
                 const sut = await Integrity.check(fileToHashFilePath, hashObj);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
 
             it('provided a hash string',
               async function () {
-                const hash = '9fd7c786e27af1eac638d0747a9ed79f';
+                const hash = 'sha1-t56X7IQ267Hza0qjpSpqb9UPcfE=';
                 const sut = await Integrity.check(fileToHashFilePath, hash);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -330,14 +330,14 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
             it('provided a hash object (JSON)',
               async function () {
-                const hashObj = '{"version":"1","hashes":{"fileToHash.txt":"9fd7c786e27af1eac638d0747a9ed79f"}}';
+                const hashObj = '{"version":"1","hashes":{"fileToHash.txt":"sha1-t56X7IQ267Hza0qjpSpqb9UPcfE="}}';
                 const sut = await Integrity.check(fileToHashFilePath, hashObj);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
 
             it('provided a hash string',
               async function () {
-                const hash = '9fd7c786e27af1eac638d0747a9ed79f';
+                const hash = 'sha1-t56X7IQ267Hza0qjpSpqb9UPcfE=';
                 const sut = await Integrity.check(fileToHashFilePath, hash);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -357,7 +357,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
               options.verbose = false;
               // @ts-ignore
               const readFileStub = sandbox.stub(Integrity, '_readFile')
-                .returns('{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}');
+                .returns('{"version":"1","hashes":{"fixtures":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}');
               const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
@@ -370,8 +370,8 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
               options.verbose = false;
               const hash = '{"version":"1","hashes":{"fixtures":{' +
-                '"contents":{"directory":"b5d58874a8e6c2b2d6a1f179b4ee7d0f"},' +
-                '"hash":"03a3d76b2c52d62ce63502b85100575f"}}}';
+                '"contents":{"directory":"sha1-2Kmnn7YpoFCNeNAAr4Xu9Eo4nLQ="},' +
+                '"hash":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}}';
               // @ts-ignore
               const readFileStub = sandbox.stub(Integrity, '_readFile')
                 .returns(hash);
@@ -392,7 +392,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
               options.verbose = false;
               const hash = '{"version":"1","hashes":{"fixtures":{' +
                 '"contents":{"directory":""},' +
-                '"hash":"03a3d76b2c52d62ce63502b85100575f"}}}';
+                '"hash":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}}';
               // @ts-ignore
               const readFileStub = sandbox.stub(Integrity, '_readFile')
                 .returns(hash);
@@ -406,7 +406,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
               it('that is valid',
                 async function () {
                   options.verbose = false;
-                  const hash = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
+                  const hash = '{"version":"1","hashes":{"fixtures":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}';
                   // @ts-ignore
                   const readFileStub = sandbox.stub(Integrity, '_readFile')
                     .returns(hash);
@@ -417,7 +417,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
               it('that is invalid',
                 async function () {
                   options.verbose = false;
-                  const hash = '{"version":"1","hashes":{"fixtures":"b5d58874a8e6c2b2d6a1f179b4ee7d0f"}}';
+                  const hash = '{"version":"1","hashes":{"fixtures":"sha1-2Kmnn7YpoFCNeNAAr4Xu9Eo4nLQ="}}';
                   // @ts-ignore
                   const readFileStub = sandbox.stub(Integrity, '_readFile')
                     .returns(hash);
@@ -454,7 +454,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
             it('provided a non-verbosely hash object (JSON)',
               async function () {
                 options.verbose = false;
-                const hashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
+                const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}';
                 const sut = await Integrity.check(fixturesDirPath, hashObj, options);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -462,7 +462,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
             it('provided a hash string',
               async function () {
                 options.verbose = false;
-                const hash = '03a3d76b2c52d62ce63502b85100575f';
+                const hash = 'sha1-DIjHOBHMnvpJxM4onkxvXbmcdME=';
                 const sut = await Integrity.check(fixturesDirPath, hash, options);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -473,14 +473,14 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
             it('provided a non-verbosely hash object (JSON), against a verbosely created hash',
               async function () {
-                const hashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
+                const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}';
                 const sut = await Integrity.check(fixturesDirPath, hashObj, options);
                 expect(sut).to.be.a('boolean').and.to.be.false;
               });
 
             it('provided a hash string against a verbosely created hash',
               async function () {
-                const hash = '03a3d76b2c52d62ce63502b85100575f';
+                const hash = 'sha1-DIjHOBHMnvpJxM4onkxvXbmcdME=';
                 const sut = await Integrity.check(fixturesDirPath, hash, options);
                 expect(sut).to.be.a('boolean').and.to.be.false;
               });
@@ -523,7 +523,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
             it('provided a non-verbosely hash object (JSON)',
               async function () {
                 options.verbose = false;
-                const hashObj = '{"version":"1","hashes":{"fixtures":"7b418ed4e1f2ff6cd215c4a2add335ef"}}';
+                const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-sZiE7sOY8PGmHRTZk4bYqUZGbeM="}}';
                 const sut = await Integrity.check(fixturesSubDirPath, hashObj, options);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -531,7 +531,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
             it('provided a hash string',
               async function () {
                 options.verbose = false;
-                const hash = '7b418ed4e1f2ff6cd215c4a2add335ef';
+                const hash = 'sha1-sZiE7sOY8PGmHRTZk4bYqUZGbeM=';
                 const sut = await Integrity.check(fixturesSubDirPath, hash, options);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -542,14 +542,14 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
             it('provided a non-verbosely hash object (JSON), against a verbosely created hash',
               async function () {
-                const hashObj = '{"version":"1","hashes":{"fixtures":"074e46454b567069ab80df4302605df2"}}';
+                const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-sZiE7sOY8PGmHRTZk4bYqUZGbeM="}}';
                 const sut = await Integrity.check(fixturesSubDirPath, hashObj, options);
                 expect(sut).to.be.a('boolean').and.to.be.false;
               });
 
             it('provided a hash string against a verbosely created hash',
               async function () {
-                const hash = '074e46454b567069ab80df4302605df2';
+                const hash = 'sha1-sZiE7sOY8PGmHRTZk4bYqUZGbeM=';
                 const sut = await Integrity.check(fixturesSubDirPath, hash, options);
                 expect(sut).to.be.a('boolean').and.to.be.false;
               });
@@ -591,7 +591,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
             it('provided a non-verbosely hash object (JSON)',
               async function () {
                 options.verbose = false;
-                const hashObj = '{"version":"1","hashes":{"fixtures":"7b418ed4e1f2ff6cd215c4a2add335ef"}}';
+                const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-sZiE7sOY8PGmHRTZk4bYqUZGbeM="}}';
                 const sut = await Integrity.check(fixturesSubDirPath, hashObj, options);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -599,7 +599,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
             it('provided a hash string',
               async function () {
                 options.verbose = false;
-                const hash = '7b418ed4e1f2ff6cd215c4a2add335ef';
+                const hash = 'sha1-sZiE7sOY8PGmHRTZk4bYqUZGbeM=';
                 const sut = await Integrity.check(fixturesSubDirPath, hash, options);
                 expect(sut).to.be.a('boolean').and.to.be.true;
               });
@@ -691,14 +691,14 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
           it('unknown encoding',
             async function () {
-              const hashObj = '{"version":"1","hashes":{"fixtures":"\\u010A,F\\u0032«+{@/="}}';
+              const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-\\u010A,F\\u0032«+{@/="}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.false;
             });
 
           it('unknown algorithm',
             async function () {
-              const hashObj = '{"version":"1","hashes":{"fixtures":"12A468C211G95"}}';
+              const hashObj = '{"version":"1","hashes":{"fixtures":"ddt-12A468C211G95"}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.false;
             });
@@ -715,7 +715,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
           it('non-verbose creation',
             async function () {
-              const hashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
+              const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
@@ -728,35 +728,35 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
           it('\'md5\' algorithm',
             async function () {
-              const hashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
+              const hashObj = '{"version":"1","hashes":{"fixtures":"md5-03a3d76b2c52d62ce63502b85100575f"}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
           it('\'sha1\' algorithm',
             async function () {
-              const hashObj = '{"version":"1","hashes":{"fixtures":"0c88c73811cc9efa49c4ce289e4c6f5db99c74c1"}}';
+              const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-0c88c73811cc9efa49c4ce289e4c6f5db99c74c1"}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
           it('\'hex\' encryption',
             async function () {
-              const hashObj = '{"version":"1","hashes":{"fixtures":"03a3d76b2c52d62ce63502b85100575f"}}';
+              const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
           it('\'base64\' encryption',
             async function () {
-              const hashObj = '{"version":"1","hashes":{"fixtures":"DIjHOBHMnvpJxM4onkxvXbmcdME="}}';
+              const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
           it('\'latin1\' encryption',
             async function () {
-              const hashObj = '{"version":"1","hashes":{"fixtures":"\\fÇ8\\u0011ÌúIÄÎ(Lo]¹tÁ"}}';
+              const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-\\fÇ8\\u0011ÌúIÄÎ(Lo]¹tÁ"}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
@@ -771,21 +771,21 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
           it('unknown encoding',
             async function () {
-              const hash = '\u010A,F\u0032«+{@/=';
+              const hash = 'sha1-\u010A,F\u0032«+{@/=';
               const sut = await Integrity.check(fixturesDirPath, hash, true);
               expect(sut).to.be.a('boolean').and.to.be.false;
             });
 
           it('unknown algorithm',
             async function () {
-              const hash = '12A468C211G95';
+              const hash = 'ddt-12A468C211G95';
               const sut = await Integrity.check(fixturesDirPath, hash, true);
               expect(sut).to.be.a('boolean').and.to.be.false;
             });
 
           it('non-verbose hash',
             async function () {
-              const hash = '03a3d76b2c52d62ce63502b85100575f';
+              const hash = 'sha1-DIjHOBHMnvpJxM4onkxvXbmcdME=';
               const sut = await Integrity.check(fixturesDirPath, hash, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
@@ -798,35 +798,35 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
           it('\'md5\' algorithm',
             async function () {
-              const hash = '03a3d76b2c52d62ce63502b85100575f';
+              const hash = 'md5-03a3d76b2c52d62ce63502b85100575f';
               const sut = await Integrity.check(fixturesDirPath, hash, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
           it('\'sha1\' algorithm',
             async function () {
-              const hashObj = '0c88c73811cc9efa49c4ce289e4c6f5db99c74c1';
+              const hashObj = 'sha1-0c88c73811cc9efa49c4ce289e4c6f5db99c74c1';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
           it('\'hex\' encryption',
             async function () {
-              const hash = '03a3d76b2c52d62ce63502b85100575f';
+              const hash = 'sha1-DIjHOBHMnvpJxM4onkxvXbmcdME=';
               const sut = await Integrity.check(fixturesDirPath, hash, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
           it('\'base64\' encryption',
             async function () {
-              const hash = 'DIjHOBHMnvpJxM4onkxvXbmcdME=';
+              const hash = 'sha1-DIjHOBHMnvpJxM4onkxvXbmcdME=';
               const sut = await Integrity.check(fixturesDirPath, hash, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
           it('\'latin1\' encryption',
             async function () {
-              const hash = '\u0003£×k,RÖ,æ5\u0002¸Q\u0000W_';
+              const hash = 'sha1-\fÇ8\u0011ÌúIÄÎ(Lo]¹tÁ';
               const sut = await Integrity.check(fixturesDirPath, hash, true);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });

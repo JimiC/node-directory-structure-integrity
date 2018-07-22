@@ -5,20 +5,20 @@
       "contents": {
         "directory": {
           "contents": {
-            "anotherFileToHash.txt": "e85c09015e3adbd3b672197d65b0e011"
+            "anotherFileToHash.txt": "sha1-EZ2w0rsSmXBOddIoz2IoOIuxGaQ="
           },
-          "hash": "27237daa8496e8be38e07687b0a0276f"
+          "hash": "sha1-CXSQtBImc4fcCOIs+oCwjltnl9Y="
         },
         "directory.1": {
           "contents": {
-            "anotherFileToHash.txt": "e85c09015e3adbd3b672197d65b0e011",
-            "otherFileToHash.txt": "aab25b0f1789fe88955cee6d2370e7b7"
+            "anotherFileToHash.txt": "sha1-EZ2w0rsSmXBOddIoz2IoOIuxGaQ=",
+            "otherFileToHash.txt": "sha1-B8FJ4uKgHESSgMvJUyrj3ix2uG8="
           },
-          "hash": "de2a28a732ac027ecd3d19eaf770e505"
+          "hash": "sha1-mEOEtX9Ukfw0wMsrqXR6IKM8DPY="
         },
-        "fileToHash.txt": "9fd7c786e27af1eac638d0747a9ed79f"
+        "fileToHash.txt": "sha1-t56X7IQ267Hza0qjpSpqb9UPcfE="
       },
-      "hash": "7b418ed4e1f2ff6cd215c4a2add335ef"
+      "hash": "sha1-sZiE7sOY8PGmHRTZk4bYqUZGbeM="
     }
   }
 }

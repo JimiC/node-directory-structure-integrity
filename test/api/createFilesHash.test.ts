@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import path from 'path';
 import { Integrity } from '../../src/app/integrity';
 import * as utils from '../../src/common/utils';
+import { checker } from '../helper';
 
 describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
 
@@ -56,60 +57,69 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
 
     });
 
-    it('to return by default an \'md5\' and \'hex\' encoded hash JSON',
+    it('to return by default an \'sha1\' and \'base64\' encoded hash JSON',
       async function () {
         const files = [anotherFileToHashFilePath, otherFileToHashFilePath];
         const sut = await Integrity.createFilesHash(files);
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-        .and.that.to.match(utils.hexRegexPattern)
-        .and.that.to.have.lengthOf(md5Length)
-        .and.to.equal('e85c09015e3adbd3b672197d65b0e011');
+        .and.to.satisfy((hash: string) =>
+        checker(hash, utils.base64RegexPattern, 'EZ2w0rsSmXBOddIoz2IoOIuxGaQ='));
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
-        .and.that.to.match(utils.hexRegexPattern)
-        .and.that.to.have.lengthOf(md5Length)
-        .and.to.equal('aab25b0f1789fe88955cee6d2370e7b7');
-      });
-
-    it('to return an \'md5\' and \'base64\' encoded hash JSON',
-      async function () {
-        const files = [anotherFileToHashFilePath, otherFileToHashFilePath];
-        const sut = await Integrity.createFilesHash(files, { encoding: 'base64' });
-        expect(sut).to.be.an('object');
-        expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-          .and.match(utils.base64RegexPattern)
-          .and.to.equal('6FwJAV4629O2chl9ZbDgEQ==');
-        expect(sut).to.haveOwnProperty(otherFileToHashFilename)
-          .and.match(utils.base64RegexPattern)
-          .and.to.equal('qrJbDxeJ/oiVXO5tI3Dntw==');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.base64RegexPattern, 'B8FJ4uKgHESSgMvJUyrj3ix2uG8='));
       });
 
     it('to return an \'sha1\' and \'hex\' encoded hash JSON',
       async function () {
         const files = [anotherFileToHashFilePath, otherFileToHashFilePath];
-        const sut = await Integrity.createFilesHash(files, { algorithm: 'sha1' });
+        const sut = await Integrity.createFilesHash(files, { encoding: 'hex' });
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-        .and.to.match(utils.hexRegexPattern)
-        .and.that.to.have.lengthOf(sha1Length)
-        .and.to.equal('119db0d2bb1299704e75d228cf6228388bb119a4');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.hexRegexPattern, '119db0d2bb1299704e75d228cf6228388bb119a4', 'sha1', sha1Length));
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
-        .and.to.match(utils.hexRegexPattern)
-        .and.that.to.have.lengthOf(sha1Length)
-        .and.to.equal('07c149e2e2a01c449280cbc9532ae3de2c76b86f');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.hexRegexPattern, '07c149e2e2a01c449280cbc9532ae3de2c76b86f', 'sha1', sha1Length));
       });
 
-    it('to return an \'sha1\' and \'base64\' encoded hash JSON',
+    it('to return an \'sha1\' and \'latin1\' encoded hash JSON',
       async function () {
         const files = [anotherFileToHashFilePath, otherFileToHashFilePath];
-        const sut = await Integrity.createFilesHash(files, { algorithm: 'sha1', encoding: 'base64' });
+        const sut = await Integrity.createFilesHash(files, { encoding: 'latin1' });
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-          .and.match(utils.base64RegexPattern)
-          .and.to.equal('EZ2w0rsSmXBOddIoz2IoOIuxGaQ=');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.latin1RegexPattern, '\u0011°Ò»\u0012pNuÒ(Ïb(8±\u0019¤'));
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
-          .and.match(utils.base64RegexPattern)
-          .and.to.equal('B8FJ4uKgHESSgMvJUyrj3ix2uG8=');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.latin1RegexPattern, '\u0007ÁIââ \u001cDËÉS*ãÞ,v¸o'));
+      });
+
+    it('to return an \'md5\' and \'base64\' encoded hash JSON',
+      async function () {
+        const files = [anotherFileToHashFilePath, otherFileToHashFilePath];
+        const sut = await Integrity.createFilesHash(files, { algorithm: 'md5' });
+        expect(sut).to.be.an('object');
+        expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.base64RegexPattern, '6FwJAV4629O2chl9ZbDgEQ==', 'md5'));
+        expect(sut).to.haveOwnProperty(otherFileToHashFilename)
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.base64RegexPattern, 'qrJbDxeJ/oiVXO5tI3Dntw==', 'md5'));
+      });
+
+    it('to return an \'md5\' and \'hex\' encoded hash JSON',
+      async function () {
+        const files = [anotherFileToHashFilePath, otherFileToHashFilePath];
+        const sut = await Integrity.createFilesHash(files, { algorithm: 'md5', encoding: 'hex' });
+        expect(sut).to.be.an('object');
+        expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.hexRegexPattern, 'e85c09015e3adbd3b672197d65b0e011', 'md5', md5Length));
+        expect(sut).to.haveOwnProperty(otherFileToHashFilename)
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.hexRegexPattern, 'aab25b0f1789fe88955cee6d2370e7b7', 'md5', md5Length));
       });
 
   });

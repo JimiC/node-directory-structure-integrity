@@ -8,6 +8,7 @@ import { Readable } from 'stream';
 import { Integrity } from '../../src/app/integrity';
 import * as utils from '../../src/common/utils';
 import { IntegrityOptions } from '../../src/interfaces/integrityOptions';
+import { checker } from '../helper';
 
 describe('IntegrityChecker: function \'createDirHash\' tests', function () {
 
@@ -77,107 +78,116 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
 
     });
 
-    it('to return by default an \'md5\' and \'hex\' encoded hash string',
+    it('to return by default an \'sha1\' and \'base64\' encoded hash string',
       async function () {
         options.verbose = false;
         const sut = await Integrity.createDirHash(fixturesDirPath, options);
         expect(sut).to.be.an('object')
           .and.to.haveOwnProperty('fixtures')
-          .and.that.to.match(utils.hexRegexPattern)
-          .and.that.to.have.lengthOf(md5Length)
-          .that.equals('03a3d76b2c52d62ce63502b85100575f');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.base64RegexPattern, 'DIjHOBHMnvpJxM4onkxvXbmcdME='));
       });
 
-    it('to return an \'md5\' and \'base64\' encoded hash string',
+    it('to return an \'sha1\' and \'hex\' encoded hash string',
       async function () {
-        options.cryptoOptions = { encoding: 'base64' };
+        options.cryptoOptions = { encoding: 'hex' };
         options.verbose = false;
         const sut = await Integrity.createDirHash(fixturesDirPath, options);
         expect(sut).to.be.an('object')
           .and.to.haveOwnProperty('fixtures')
-          .and.to.match(utils.base64RegexPattern)
-          .and.to.equal('A6PXayxS1izmNQK4UQBXXw==');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.hexRegexPattern, '0c88c73811cc9efa49c4ce289e4c6f5db99c74c1', 'sha1', sha1Length));
       });
 
-    it('to return an \'md5\' and \'latin1\' encoded hash string',
+    it('to return an \'sha1\' and \'latin1\' encoded hash string',
       async function () {
         options.cryptoOptions = { encoding: 'latin1' };
         options.verbose = false;
         const sut = await Integrity.createDirHash(fixturesDirPath, options);
         expect(sut).to.be.an('object')
           .and.to.haveOwnProperty('fixtures')
-          .and.to.match(utils.latin1RegexPattern)
-          .and.to.equal('\u0003£×k,RÖ,æ5\u0002¸Q\u0000W_');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.latin1RegexPattern, '\fÇ8\u0011ÌúIÄÎ(Lo]¹tÁ'));
       });
 
-    it('to return an \'sha1\' and \'hex\' encoded hash string',
+    it('to return an \'md5\' and \'base64\' encoded hash string',
       async function () {
-        options.cryptoOptions = { algorithm: 'sha1' };
+        options.cryptoOptions = { algorithm: 'md5' };
         options.verbose = false;
         const sut = await Integrity.createDirHash(fixturesDirPath, options);
         expect(sut).to.be.an('object')
           .and.to.haveOwnProperty('fixtures')
-          .and.to.match(utils.hexRegexPattern)
-          .and.that.to.have.lengthOf(sha1Length)
-          .and.to.equal('0c88c73811cc9efa49c4ce289e4c6f5db99c74c1');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.base64RegexPattern, 'A6PXayxS1izmNQK4UQBXXw==', 'md5'));
       });
 
-    it('to return an \'sha1\' and \'base64\' encoded hash string',
+    it('to return an \'md5\' and \'hex\' encoded hash string',
       async function () {
-        options.cryptoOptions = { algorithm: 'sha1', encoding: 'base64' };
+        options.cryptoOptions = { algorithm: 'md5', encoding: 'hex' };
         options.verbose = false;
         const sut = await Integrity.createDirHash(fixturesDirPath, options);
         expect(sut).to.be.an('object')
           .and.to.haveOwnProperty('fixtures')
-          .and.to.match(utils.base64RegexPattern)
-          .and.to.equal('DIjHOBHMnvpJxM4onkxvXbmcdME=');
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.hexRegexPattern, '03a3d76b2c52d62ce63502b85100575f', 'md5', md5Length));
       });
 
     context('to verbosely compute a hash JSON', function () {
 
-      it('with \'md5\' and \'hex\' encoding by default',
+      it('with \'sha1\' and \'base64\' encoding by default',
         async function () {
           const sut = await Integrity.createDirHash(fixturesDirPath, options);
           expect(sut).to.be.an('object')
             .and.to.haveOwnProperty('fixtures')
             .and.that.to.haveOwnProperty('contents')
             .and.that.to.haveOwnProperty(fileToHashFilename)
-            .and.that.to.have.lengthOf(md5Length)
-            .that.equals('7a3d5b475bd07ae9041fab2a133f40c4');
-        });
-
-      it('with \'md5\' and \'base64\' encoding',
-        async function () {
-          options.cryptoOptions = { encoding: 'base64' };
-          const sut = await Integrity.createDirHash(fixturesDirPath, options);
-          expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-          expect(sut.fixtures).to.haveOwnProperty('contents');
-          expect(sut.fixtures.contents).to.haveOwnProperty(fileToHashFilename)
-            .and.to.match(utils.base64RegexPattern)
-            .and.to.equal('ej1bR1vQeukEH6sqEz9AxA==');
+            .and.to.satisfy((hash: string) =>
+              checker(hash, utils.base64RegexPattern, 'H58mYNjbMJTkiNvvNfj2YKl3ck0='));
         });
 
       it('with \'sha1\' and \'hex\' encoding',
         async function () {
-          options.cryptoOptions = { algorithm: 'sha1' };
+          options.cryptoOptions = { encoding: 'hex' };
           const sut = await Integrity.createDirHash(fixturesDirPath, options);
           expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
           expect(sut.fixtures).to.haveOwnProperty('contents');
           expect(sut.fixtures.contents).to.haveOwnProperty(fileToHashFilename)
-          .and.to.match(utils.hexRegexPattern)
-          .and.that.to.have.lengthOf(sha1Length)
-            .and.to.equal('1f9f2660d8db3094e488dbef35f8f660a977724d');
+            .and.to.satisfy((hash: string) =>
+              checker(hash, utils.hexRegexPattern, '1f9f2660d8db3094e488dbef35f8f660a977724d', 'sha1', sha1Length));
         });
 
-      it('with \'sha1\' and \'base64\' encoding',
+      it('with \'sha1\' and \'latin1\' encoding',
         async function () {
-          options.cryptoOptions = { algorithm: 'sha1', encoding: 'base64' };
+          options.cryptoOptions = { encoding: 'latin1' };
           const sut = await Integrity.createDirHash(fixturesDirPath, options);
           expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
           expect(sut.fixtures).to.haveOwnProperty('contents');
           expect(sut.fixtures.contents).to.haveOwnProperty(fileToHashFilename)
-            .and.match(utils.base64RegexPattern)
-            .and.to.equal('H58mYNjbMJTkiNvvNfj2YKl3ck0=');
+            .and.to.satisfy((hash: string) =>
+              checker(hash, utils.latin1RegexPattern, '\u001f&`ØÛ0äÛï5øö`©wrM'));
+        });
+
+      it('with \'md5\' and \'base64\' encoding',
+        async function () {
+          options.cryptoOptions = { algorithm: 'md5' };
+          const sut = await Integrity.createDirHash(fixturesDirPath, options);
+          expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
+          expect(sut.fixtures).to.haveOwnProperty('contents');
+          expect(sut.fixtures.contents).to.haveOwnProperty(fileToHashFilename)
+            .and.to.satisfy((hash: string) =>
+              checker(hash, utils.base64RegexPattern, 'ej1bR1vQeukEH6sqEz9AxA==', 'md5'));
+        });
+
+      it('with \'md5\' and \'hex\' encoding',
+        async function () {
+          options.cryptoOptions = { algorithm: 'md5', encoding: 'hex' };
+          const sut = await Integrity.createDirHash(fixturesDirPath, options);
+          expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
+          expect(sut.fixtures)
+            .to.haveOwnProperty('contents')
+            .and.that.to.haveOwnProperty(fileToHashFilename)
+            .and.to.satisfy((hash: string) =>
+              checker(hash, utils.hexRegexPattern, '7a3d5b475bd07ae9041fab2a133f40c4', 'md5', md5Length));
         });
 
     });
@@ -191,11 +201,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = [fileToHashFilename];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('5a4f9a039bd6b00443651ee9a9ddf582');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'pvPcnwMc2YvNtloZSTvaAM1s0ys='));
           });
 
         it('the provided file (glob pattern)',
@@ -203,11 +212,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = ['**/fileToHash.txt'];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('5a4f9a039bd6b00443651ee9a9ddf582');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'pvPcnwMc2YvNtloZSTvaAM1s0ys='));
           });
 
         it('the provided files',
@@ -215,11 +223,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = [fileToHashFilename, otherFileToHashFilename];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('cdda64b8fe31306c04ec09931706ea0d');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'SojskkzqtOGxaQowiXKOzzuDAH4='));
           });
 
         it('the provided files (glob pattern)',
@@ -227,11 +234,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = ['**/fileToHash.txt', '**/otherFileToHash.txt'];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('cdda64b8fe31306c04ec09931706ea0d');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'SojskkzqtOGxaQowiXKOzzuDAH4='));
           });
 
         it('the provided files (glob pattern)',
@@ -239,11 +245,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = ['**/*.txt'];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('610bfceef8f72601feec790a348f7114');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'evAu7MaiJLQBYPSjKD1DoJGTdiM='));
           });
 
         it('the provided files (glob pattern)',
@@ -251,11 +256,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = ['**/*.*'];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('9280fda719b7e4a6872c7fbbea5486d9');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'qd8CRtuhKzDR8IGKUbpuLpzAHrA='));
           });
 
         it('the provided directory',
@@ -279,11 +283,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = ['**/fixtures/**'];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('9403e5114acb6bb59791a97291be54b5');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'FwVFRcW8fWNb4+n0h3MujaW3/Pw='));
           });
 
         it('the provided directory (glob pattern)',
@@ -299,11 +302,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = ['directory'];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('f4af5417a926d36fba8727d300da9e9d');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'bXBFds4jVjamLBXpa4dMtHU1RUE='));
           });
 
         it('the provided subdirectory (glob pattern)',
@@ -311,11 +313,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = ['**/directory'];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('f4af5417a926d36fba8727d300da9e9d');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'bXBFds4jVjamLBXpa4dMtHU1RUE='));
           });
 
         it('the provided subdirectory (glob pattern)',
@@ -323,11 +324,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             options.exclude = ['**/directory/**'];
             options.verbose = false;
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('ca9e071a1c25831012e95935a23bd06a');
+            expect(sut).to.be.an('object')
+              .and.to.haveOwnProperty('fixtures')
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'Fh7Q0MBl/7pLVArQmDho3tH+1M0='));
           });
 
       });
@@ -342,9 +342,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('5a4f9a039bd6b00443651ee9a9ddf582');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'pvPcnwMc2YvNtloZSTvaAM1s0ys='));
           });
 
         it('the provided file (glob pattern)',
@@ -355,9 +354,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('5a4f9a039bd6b00443651ee9a9ddf582');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'pvPcnwMc2YvNtloZSTvaAM1s0ys='));
           });
 
         it('the provided files',
@@ -374,9 +372,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents.fixtures.contents['directory.1'].contents)
               .to.not.haveOwnProperty(otherFileToHashFilename);
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('cdda64b8fe31306c04ec09931706ea0d');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'SojskkzqtOGxaQowiXKOzzuDAH4='));
           });
 
         it('the provided files (glob pattern)',
@@ -387,9 +384,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('cdda64b8fe31306c04ec09931706ea0d');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'SojskkzqtOGxaQowiXKOzzuDAH4='));
           });
 
         it('the provided \'txt\' files (glob pattern)',
@@ -400,9 +396,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('610bfceef8f72601feec790a348f7114');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'evAu7MaiJLQBYPSjKD1DoJGTdiM='));
           });
 
         it('all files (glob pattern)',
@@ -413,9 +408,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('9280fda719b7e4a6872c7fbbea5486d9');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'qd8CRtuhKzDR8IGKUbpuLpzAHrA='));
           });
 
         it('the provided directory',
@@ -442,9 +436,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.be.empty;
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('9403e5114acb6bb59791a97291be54b5');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'FwVFRcW8fWNb4+n0h3MujaW3/Pw='));
           });
 
         it('everything (glob pattern)',
@@ -470,9 +463,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.not.haveOwnProperty('directory');
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('f4af5417a926d36fba8727d300da9e9d');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'bXBFds4jVjamLBXpa4dMtHU1RUE='));
           });
 
         it('the provided subdirectory (glob pattern)',
@@ -491,9 +483,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.not.haveOwnProperty('directory');
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('f4af5417a926d36fba8727d300da9e9d');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'bXBFds4jVjamLBXpa4dMtHU1RUE='));
           });
 
         it('the provided subdirectory contents (glob pattern)',
@@ -508,9 +499,8 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.be.empty;
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .and.to.equal('ca9e071a1c25831012e95935a23bd06a');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'Fh7Q0MBl/7pLVArQmDho3tH+1M0='));
           });
 
       });
@@ -532,22 +522,18 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('fixtures')
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.haveOwnProperty(fileToHashFilename)
-              .and.that.and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('9fd7c786e27af1eac638d0747a9ed79f');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 't56X7IQ267Hza0qjpSpqb9UPcfE='));
             expect(sut.fixtures.contents)
               .to.haveOwnProperty(fileToHashFilename)
-              .and.and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('7a3d5b475bd07ae9041fab2a133f40c4');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'H58mYNjbMJTkiNvvNfj2YKl3ck0='));
             expect(sut.fixtures.contents.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('56fd9124ef32cf7adb1efc1b6004100c');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, '3MhOCNtlpfvht75sVRn+M010hIo='));
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('52c6eb3eb784f751328e07573a915d0b');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'XITQWhgqwyUBWIBG5sEL6vRkfe0='));
           });
 
         it('only the provided root directory file (glob pattern)',
@@ -564,13 +550,11 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents).not.to.haveOwnProperty('sameContentWithFileToHash.txt');
             expect(sut.fixtures.contents)
               .to.haveOwnProperty(fileToHashFilename)
-              .and.that.and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('7a3d5b475bd07ae9041fab2a133f40c4');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'H58mYNjbMJTkiNvvNfj2YKl3ck0='));
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('bc1cfe46a39ca0ad6d770bd9cb6838df');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'usu4eDPP58XnuB1TgLgoYMBxy8s='));
           });
 
         it('only the provided subdirectory file (glob pattern)',
@@ -588,17 +572,14 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('fixtures')
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.haveOwnProperty(fileToHashFilename)
-              .and.that.and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('9fd7c786e27af1eac638d0747a9ed79f');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 't56X7IQ267Hza0qjpSpqb9UPcfE='));
             expect(sut.fixtures.contents.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('56fd9124ef32cf7adb1efc1b6004100c');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, '3MhOCNtlpfvht75sVRn+M010hIo='));
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('e9ab888d98ae29afb56bb79b3a776570');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'R1ZtmBxOXb6nyf1kdGROAuSxx5g='));
           });
 
         it('only the provided root directory contents (glob pattern)',
@@ -614,18 +595,15 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents).not.to.haveOwnProperty('directory.1');
             expect(sut.fixtures.contents)
               .to.haveOwnProperty('sameContentWithFileToHash.txt')
-              .and.that.and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('a19172a03c5222a9eff8245d9d770db8');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'l5sOr3meWkHyZWPi2Ln4GM7/lrg='));
             expect(sut.fixtures.contents)
               .to.haveOwnProperty(fileToHashFilename)
-              .and.that.and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('7a3d5b475bd07ae9041fab2a133f40c4');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'H58mYNjbMJTkiNvvNfj2YKl3ck0='));
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('685f980be84daee8248c883515c81864');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'nCZJGqXYUDnWzQWb5XQ6TGEVCnE='));
           });
 
         it('only the provided subdirectory contents (glob pattern)',
@@ -647,22 +625,18 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
             expect(sut.fixtures.contents).not.to.haveOwnProperty('sameContentWithFileToHash.txt');
             expect(sut.fixtures.contents.directory.contents)
               .to.haveOwnProperty('anotherFileToHash.txt')
-              .and.that.and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('e85c09015e3adbd3b672197d65b0e011');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'EZ2w0rsSmXBOddIoz2IoOIuxGaQ='));
             expect(sut.fixtures.contents.directory.contents)
               .to.haveOwnProperty('otherFileToHash.txt')
-              .and.that.and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('aab25b0f1789fe88955cee6d2370e7b7');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'B8FJ4uKgHESSgMvJUyrj3ix2uG8='));
             expect(sut.fixtures.contents.directory.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('b5d58874a8e6c2b2d6a1f179b4ee7d0f');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, '2Kmnn7YpoFCNeNAAr4Xu9Eo4nLQ='));
             expect(sut.fixtures.hash)
-              .and.that.to.have.lengthOf(md5Length)
-              .and.that.to.match(utils.hexRegexPattern)
-              .that.equals('15fb36230f8b53646d15fb265abdf333');
+              .and.to.satisfy((hash: string) =>
+                checker(hash, utils.base64RegexPattern, 'xOC+1Z2G35an553IP1zy0A85li0='));
           });
 
       });
