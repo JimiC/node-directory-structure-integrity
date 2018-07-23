@@ -15,7 +15,7 @@
 
 A [Node.js](https://nodejs.org) utility tool that creates an `.integrity.json` file, that contains the hash checksums of a directory structure.
 
-The hashes are computed using the `sha1` algorithm and `base64` encoding by default, complaining to [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) spec, but other [Node.js crypto](https://nodejs.org/api/crypto.html) supported [algorithms](https://nodejs.org/api/crypto.html#crypto_crypto_gethashes) and [encodings](https://nodejs.org/api/crypto.html#crypto_hash_digest_encoding) can be used.
+The hashes are computed using the `sha1` algorithm and `base64` encoding by default, complying to [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) spec, but other [Node.js crypto](https://nodejs.org/api/crypto.html) supported [algorithms](https://nodejs.org/api/crypto.html#crypto_crypto_gethashes) and [encodings](https://nodejs.org/api/crypto.html#crypto_hash_digest_encoding) can be used.
 
 ## Instalation
 
