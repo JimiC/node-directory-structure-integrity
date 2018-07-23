@@ -180,22 +180,27 @@ export class Integrity {
       return _options;
     }
     const _integrityMembers = _hash.split('-');
+    if (_integrityMembers.length < 2) {
+      return _options;
+    }
+    // detect verbosity
+    _options.verbose = !!_hashObj.hashes[path.basename(inPath)].hash;
     // find encoding
+    const _enc = _integrityMembers.splice(-1)[0];
     const _encoding: HexBase64Latin1Encoding | undefined =
-      utils.hexRegexPattern.test(_integrityMembers[1])
+      utils.hexRegexPattern.test(_enc)
         ? 'hex'
-        : utils.base64RegexPattern.test(_integrityMembers[1])
+        : utils.base64RegexPattern.test(_enc)
           ? 'base64'
-          : utils.latin1RegexPattern.test(_integrityMembers[1])
+          : utils.latin1RegexPattern.test(_enc)
             ? 'latin1'
             : undefined;
     if (!_encoding) {
       return _options;
     }
-    // detect verbosity
-    _options.verbose = !!_hashObj.hashes[path.basename(inPath)].hash;
     // find algorithm
-    const _algorithm = getHashes().find(algorithm => algorithm === _integrityMembers[0]);
+    const _alg = _integrityMembers.join('-');
+    const _algorithm = getHashes().find(algorithm => algorithm === _alg);
     // assign crypto options
     _options.cryptoOptions = { algorithm: _algorithm, encoding: _encoding };
     return _options;
