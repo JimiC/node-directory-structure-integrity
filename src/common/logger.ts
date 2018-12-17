@@ -34,7 +34,7 @@ export class Logger extends BaseLogger {
   public updateLog(message: string, groupId?: string): void;
   public updateLog(message: string, line: number, groupId?: string): void;
   public updateLog(message: string, lineOrGroupId?: number | string, groupId?: string): void {
-    groupId = (typeof lineOrGroupId === 'string' && Number.isNaN(Number.parseInt(lineOrGroupId)))
+    groupId = (typeof lineOrGroupId === 'string' && Number.isNaN(Number.parseInt(lineOrGroupId, 10)))
       ? lineOrGroupId as string
       : groupId;
 
