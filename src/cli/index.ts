@@ -30,7 +30,7 @@ export = (async (): Promise<void> => {
     }
     if (pargs.command === 'check') {
       spinner = logger.spinnerLogStart(`Checking integrity of: '${pargs.inPath}'`, id);
-      const passed = await Integrity.check(pargs.inPath, pargs.integrity, options, pargs.detect);
+      const passed = await Integrity.check(pargs.inPath, pargs.integrity, options);
       message = passed ? 'Integrity validated' : 'Integrity failed';
     }
     logger.spinnerLogStop(spinner, message, id);

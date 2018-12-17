@@ -15,29 +15,20 @@ export class Integrity {
   public static readonly CurrentSchemaVersion = '1';
 
   public static async check(fileOrDirPath: string, integrity: string): Promise<boolean>;
-  public static async check(fileOrDirPath: string, integrity: string, options?: IntegrityOptions): Promise<boolean>;
-  public static async check(fileOrDirPath: string, integrity: string, detectOptions?: boolean): Promise<boolean>;
+  public static async check(fileOrDirPath: string, integrity: string, options: IntegrityOptions): Promise<boolean>;
   public static async check(
-    fileOrDirPath: string, integrity: string, options?: IntegrityOptions, detectOptions?: boolean): Promise<boolean>;
-  public static async check(
-    fileOrDirPath: string,
-    integrity: string,
-    optionsOrDetectOptions?: IntegrityOptions | boolean,
-    detectOptions?: boolean): Promise<boolean> {
+    fileOrDirPath: string, integrity: string, options?: IntegrityOptions): Promise<boolean> {
     if (!fileOrDirPath || typeof fileOrDirPath !== 'string' || !integrity || typeof integrity !== 'string') {
       return false;
     }
-    let _options: IntegrityOptions | undefined = optionsOrDetectOptions as IntegrityOptions;
-    if (typeof optionsOrDetectOptions === 'boolean') {
-      _options = undefined;
-      detectOptions = optionsOrDetectOptions;
+    const exclude = options ? options.exclude : undefined;
+    const verbose = options ? options.verbose : undefined;
+    if (!options || !options.cryptoOptions) {
+      options = await this._detectOptions(fileOrDirPath, integrity);
+      options.exclude = exclude;
+      options.verbose = verbose || options.verbose;
     }
-    if (detectOptions) {
-      const exclude = _options ? _options.exclude : undefined;
-      _options = await this._detectOptions(fileOrDirPath, integrity);
-      _options.exclude = exclude;
-    }
-    const _hashObj = await Integrity.create(fileOrDirPath, _options);
+    const _hashObj = await Integrity.create(fileOrDirPath, options);
     let _integrityObj: IndexedObject;
     // 'integrity' is a file or directory path
     if (await this._exists(integrity)) {
@@ -245,7 +236,7 @@ export class Integrity {
       : _getExclutions([]);
     const _verbose = options && options.verbose !== undefined
       ? options.verbose
-      : true;
+      : false;
     return {
       cryptoOptions: _cryptoOptions,
       exclude,
@@ -302,7 +293,7 @@ export class Integrity {
       };
       const _findRootIndex = async (_array: string[], _index: number): Promise<number> => {
         const _dirPath = utils.getAbsolutePath(_array, _index);
-        const _dirHash = await this.createDirHash(_dirPath);
+        const _dirHash = await this.createDirHash(_dirPath, { verbose: true });
         const _integrityDirHash: string | IndexedObject = _hashes[_array[_index]];
         const _dirHashes: IndexedObject = _dirHash[_array[_index]];
         if (_integrityDirHash && _dirHashes) {

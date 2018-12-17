@@ -33,14 +33,13 @@ describe('YargsParser: tests', function () {
         expect(sut).to.be.an('object');
         expect(sut).to.be.haveOwnProperty('algorithm');
         expect(sut).to.be.haveOwnProperty('command');
-        expect(sut).to.be.haveOwnProperty('detect');
         expect(sut).to.be.haveOwnProperty('encoding');
         expect(sut).to.be.haveOwnProperty('exclude');
         expect(sut).to.be.haveOwnProperty('inPath');
         expect(sut).to.be.haveOwnProperty('integrity');
         expect(sut).to.be.haveOwnProperty('outPath');
         expect(sut).to.be.haveOwnProperty('verbose');
-        expect(Object.keys(sut)).with.length(9);
+        expect(Object.keys(sut)).with.length(8);
       });
 
     it('that the \'algorithm\' option gets parsed correctly',
@@ -53,14 +52,6 @@ describe('YargsParser: tests', function () {
       function () {
         argv.value([...args]);
         expect(parser.parse()).to.be.have.property('command', args[2]);
-      });
-
-    it('that the \'detect\' gets parsed correctly',
-      function () {
-        args.splice(2, 1, 'check');
-        args = [...args, '-i', '123456789', '-d'];
-        argv.value(args);
-        expect(parser.parse()).to.be.have.property('detect', true);
       });
 
     it('that the \'encoding\' option gets parsed correctly',

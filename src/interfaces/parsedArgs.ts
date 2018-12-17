@@ -2,7 +2,6 @@
 export interface IParsedArgs {
   algorithm: string;
   command: string;
-  detect: boolean;
   encoding: string;
   exclude: string[];
   inPath: string;

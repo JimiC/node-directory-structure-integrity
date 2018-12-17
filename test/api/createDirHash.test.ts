@@ -134,6 +134,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
 
     context('to verbosely compute a hash JSON', function () {
 
+      beforeEach(function () {
+        options.verbose = true;
+      });
+
       it('with \'sha1\' and \'base64\' encoding by default',
         async function () {
           const sut = await Integrity.createDirHash(fixturesDirPath, options);
@@ -334,6 +338,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
 
       context('in verbosely computation', function () {
 
+        beforeEach(function () {
+          options.verbose = true;
+        });
+
         it('the provided file',
           async function () {
             options.exclude = [fileToHashFilename];
@@ -510,6 +518,10 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
     context('to include', function () {
 
       context('in verbosely computation', function () {
+
+        beforeEach(function () {
+          options.verbose = true;
+        });
 
         it('the provided file (glob pattern)',
           async function () {

@@ -25,7 +25,7 @@ export class YargsParser {
     },
     r: {
       alias: 'verbose',
-      default: true,
+      default: false,
       description: 'Verbosely create hashes of a directory',
       type: 'boolean',
     },
@@ -38,6 +38,12 @@ export class YargsParser {
   };
 
   private readonly _createOptions: { [key: string]: y.Options } = {
+    m: {
+      alias: 'manifest',
+      default: true,
+      description: 'Saves the integrity hash in the project\'s manifest (package.json)',
+      type: 'boolean',
+    },
     o: {
       alias: ['out', 'output'],
       description: 'The directory path where to persist the created integrity file',
@@ -46,11 +52,6 @@ export class YargsParser {
   };
 
   private readonly _checkOptions: { [key: string]: y.Options } = {
-    d: {
-      alias: 'detect',
-      description: 'Detect the options used to create the integrity file',
-      type: 'boolean',
-    },
     i: {
       alias: 'integrity',
       demandOption: true,
@@ -96,7 +97,6 @@ export class YargsParser {
     return {
       algorithm: _pargs.algorithm,
       command: _pargs._[0],
-      detect: _pargs.detect,
       encoding: _pargs.encoding,
       exclude: _pargs.exclude,
       inPath: _pargs.input,
