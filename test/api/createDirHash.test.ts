@@ -68,7 +68,7 @@ describe('IntegrityChecker: function \'createDirHash\' tests', function () {
       it('a file can not be read',
         function () {
           options.verbose = false;
-          const createReadStreamStub = sinon.stub(fs, 'createReadStream').returns(new Readable());
+          const createReadStreamStub = sinon.stub(fs, 'createReadStream').returns(new Readable() as fs.ReadStream);
           Integrity.createDirHash(fixturesDirPath, options)
             .catch(error => {
               createReadStreamStub.restore();

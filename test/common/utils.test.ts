@@ -155,7 +155,7 @@ describe('Utils: tests', function () {
 
       it('to throw a TypeError when passed parameter is not a function',
         function () {
-          expect(utils.promisify.bind(utils, [])).to.throw(TypeError);
+          expect(utils.promisify.bind(utils, [] as any)).to.throw(TypeError);
         });
 
       it('to return a Promise',

@@ -66,7 +66,7 @@ describe('IntegrityChecker: function \'createFileHash\' tests', function () {
 
       it('the file can not be read',
         function () {
-          const createReadStreamStub = sinon.stub(fs, 'createReadStream').returns(new Readable());
+          const createReadStreamStub = sinon.stub(fs, 'createReadStream').returns(new Readable() as fs.ReadStream);
           Integrity.createFileHash(fileToHashFilePath)
             .catch(error => {
               createReadStreamStub.restore();

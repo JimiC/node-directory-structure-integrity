@@ -111,7 +111,7 @@ describe('YargsParser: tests', function () {
         const consoleErrorStub = sandbox.stub(console, 'error');
         const stderrStub = sandbox.stub(process.stderr, 'write');
         const exitStub = sandbox.stub(process, 'exit');
-        const statStub = sandbox.stub(fs, 'statSync').returns({ isFile: () => true });
+        const statStub = sandbox.stub(fs, 'statSync').returns({ isFile: () => true } as any);
         args.pop();
         args.push('file.io');
         argv.value(args);

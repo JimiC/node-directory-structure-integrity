@@ -674,7 +674,7 @@ describe('IntegrityChecker: function \'check\' tests', function () {
 
           it('returns nothing',
             async function () {
-              const createStub = sandbox.stub(Integrity, 'create').returns(undefined);
+              const createStub = sandbox.stub(Integrity, 'create').resolves(undefined);
               const hashObj = '{"version":"1","hashes":{"fixtures":"sha1-\\fÇ8\\u0011ÌúIÄÎ(Lo]¹tÁ"}}';
               const sut = await Integrity.check(fixturesDirPath, hashObj, true);
               expect(createStub.called).to.be.true;

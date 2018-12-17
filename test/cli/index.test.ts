@@ -2,7 +2,7 @@
 // tslint:disable no-unused-expression
 import { expect } from 'chai';
 import { EventEmitter } from 'events';
-import readline from 'readline';
+import readline, { ReadLine } from 'readline';
 import * as sinon from 'sinon';
 import { Integrity } from '../../src/app/integrity';
 import ndsi from '../../src/cli/index';
@@ -137,7 +137,8 @@ describe('CLI: tests', function () {
         async function () {
           process.stdout.isTTY = true;
           pargs.command = 'check';
-          icCheckStub.throws(new Error());
+          const error = new Error();
+          icCheckStub.throws(error);
           const exitStub = sandbox.stub(process, 'exit');
           const consoleLogStub = sandbox.stub(console, 'log');
           const stdoutStub = sandbox.stub(process.stdout, 'write');
@@ -149,7 +150,7 @@ describe('CLI: tests', function () {
           exitStub.restore();
           expect(loggerSpinnerLogStopSpy.calledOnce).to.be.true;
           expect(loggerUpdateLogSpy.callCount).to.equal(3);
-          expect(loggerUpdateLogSpy.thirdCall.calledWithMatch(/Error: /)).to.be.true;
+          expect(loggerUpdateLogSpy.thirdCall.calledWithMatch(error.message)).to.be.true;
         });
 
     });
@@ -207,7 +208,7 @@ describe('CLI: tests', function () {
           const stdoutStub = sandbox.stub(process.stdout, 'write');
           const handleForcedExitStub = sandbox.stub(Logger.prototype, 'handleForcedExit');
           const emitter = new EventEmitter();
-          sandbox.stub(readline, 'createInterface').returns(emitter);
+          sandbox.stub(readline, 'createInterface').returns(emitter as ReadLine);
           const promise = ndsi().then(() => {
             consoleLogStub.restore();
             stdoutStub.restore();
