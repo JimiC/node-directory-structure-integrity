@@ -1,10 +1,11 @@
-version: #{build}
+version: '#{build}'
 image:
   - Visual Studio 2017
 environment:
   # Define versions of Node.js
   matrix:
     - node_js: '' # latest node
+    - node_js: 10
     - node_js: 9
     - node_js: 8
     - node_js: 7
