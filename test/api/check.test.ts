@@ -7,7 +7,7 @@ import { Integrity } from '../../src/app/integrity';
 import * as utils from '../../src/common/utils';
 import { IntegrityOptions } from '../../src/interfaces/integrityOptions';
 
-describe('IntegrityChecker: function \'check\' tests', function () {
+describe('Integrity: function \'check\' tests', function () {
 
   context('expects', function () {
 
@@ -645,6 +645,41 @@ describe('IntegrityChecker: function \'check\' tests', function () {
           options.exclude = [fileToHashFilename];
           const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
           expect(sut).to.be.a('boolean').and.to.be.false;
+        });
+
+      it('to succesfully detect the options when NOT provided',
+        async function () {
+          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath);
+          expect(sut).to.be.a('boolean').and.to.be.true;
+        });
+
+      it('to succesfully detect the crypto options when NOT provided',
+        async function () {
+          options.cryptoOptions = undefined;
+          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
+          expect(sut).to.be.a('boolean').and.to.be.true;
+        });
+
+      it('to succesfully detect the crypto encoding when NOT provided',
+        async function () {
+          options.cryptoOptions = { algorithm: 'md5' };
+          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
+          expect(sut).to.be.a('boolean').and.to.be.true;
+        });
+
+      it('to succesfully detect the crypto algorithm when NOT provided',
+        async function () {
+          options.cryptoOptions = { encoding: 'latin1' };
+          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
+          expect(sut).to.be.a('boolean').and.to.be.true;
+        });
+
+      it('to bypass detection when all crypto options are provided',
+        async function () {
+          options.cryptoOptions = { algorithm: 'sha1', encoding: 'base64' };
+          options.verbose = true;
+          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
+          expect(sut).to.be.a('boolean').and.to.be.true;
         });
 
       context('to fail detection when', function () {

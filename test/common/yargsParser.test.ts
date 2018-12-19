@@ -17,7 +17,7 @@ describe('YargsParser: tests', function () {
     sandbox = sinon.createSandbox();
     argv = sandbox.stub(process, 'argv');
     parser = new YargsParser();
-    args = ['node', 'integrity-checker', 'create', '-p', '.'];
+    args = ['node', 'ndsi', 'create', '-s', '.'];
   });
 
   afterEach(function () {
@@ -30,16 +30,12 @@ describe('YargsParser: tests', function () {
       function () {
         argv.value([...args]);
         const sut = parser.parse();
+        const props = ['algorithm', 'command', 'encoding',
+          'exclude', 'inPath', 'integrity',
+          'manifest', 'outPath', 'verbose'];
         expect(sut).to.be.an('object');
-        expect(sut).to.be.haveOwnProperty('algorithm');
-        expect(sut).to.be.haveOwnProperty('command');
-        expect(sut).to.be.haveOwnProperty('encoding');
-        expect(sut).to.be.haveOwnProperty('exclude');
-        expect(sut).to.be.haveOwnProperty('inPath');
-        expect(sut).to.be.haveOwnProperty('integrity');
-        expect(sut).to.be.haveOwnProperty('outPath');
-        expect(sut).to.be.haveOwnProperty('verbose');
-        expect(Object.keys(sut)).with.length(8);
+        props.forEach(prop => expect(sut).to.be.haveOwnProperty(prop));
+        expect(Object.keys(sut)).with.length(props.length);
       });
 
     it('that the \'algorithm\' option gets parsed correctly',
@@ -48,6 +44,7 @@ describe('YargsParser: tests', function () {
         argv.value(args);
         expect(parser.parse()).to.be.have.property('algorithm', args[6]);
       });
+
     it('that the \'command\' gets parsed correctly',
       function () {
         argv.value([...args]);
@@ -83,6 +80,13 @@ describe('YargsParser: tests', function () {
         expect(parser.parse()).to.be.have.property('integrity', args[6]);
       });
 
+    it('that the \'manifest\' option gets parsed correctly',
+      function () {
+        args = [...args, '-m', 'true'];
+        argv.value(args);
+        expect(parser.parse()).to.be.have.property('manifest', true);
+      });
+
     it('that the \'outPath\' option gets parsed correctly',
       function () {
         args = [...args, '-o', './out'];
@@ -92,9 +96,9 @@ describe('YargsParser: tests', function () {
 
     it('that the \'verbose\' option gets parsed correctly',
       function () {
-        args = [...args, '-r', 'false'];
+        args = [...args, '-v', 'true'];
         argv.value(args);
-        expect(parser.parse()).to.be.have.property('verbose', false);
+        expect(parser.parse()).to.be.have.property('verbose', true);
       });
 
     it('to throw an Error on invalid file path',
@@ -108,6 +112,52 @@ describe('YargsParser: tests', function () {
         argv.value(args);
         parser.parse();
         expect(consoleErrorStub.called).to.be.true;
+        expect(consoleErrorStub.thirdCall
+          .calledWithExactly('ENOENT: no such file or directory, \'file.io\''))
+          .to.be.true;
+        expect(exitStub.called).to.be.true;
+        statStub.restore();
+        stderrStub.restore();
+        consoleErrorStub.restore();
+        exitStub.restore();
+      });
+
+    it('to throw an Error on invalid use of ' +
+      '\'manifest\' and \'integrity\' options with the \'check\' command',
+      function () {
+        const consoleErrorStub = sandbox.stub(console, 'error');
+        const stderrStub = sandbox.stub(process.stderr, 'write');
+        const exitStub = sandbox.stub(process, 'exit');
+        const statStub = sandbox.stub(fs, 'statSync').returns({ isFile: () => true } as any);
+        args.splice(2, 1, 'check');
+        args.push(...['-m', '-i', '.']);
+        argv.value(args);
+        parser.parse();
+        expect(consoleErrorStub.called).to.be.true;
+        expect(consoleErrorStub.thirdCall
+          .calledWithExactly('Arguments integrity and manifest are mutually exclusive'))
+          .to.be.true;
+        expect(exitStub.called).to.be.true;
+        statStub.restore();
+        stderrStub.restore();
+        consoleErrorStub.restore();
+        exitStub.restore();
+      });
+
+    it('to throw an Error on invalid use of ' +
+      '\'integrity\' options with the \'check\' command',
+      function () {
+        const consoleErrorStub = sandbox.stub(console, 'error');
+        const stderrStub = sandbox.stub(process.stderr, 'write');
+        const exitStub = sandbox.stub(process, 'exit');
+        const statStub = sandbox.stub(fs, 'statSync').returns({ isFile: () => true } as any);
+        args.splice(2, 1, 'check');
+        argv.value(args);
+        parser.parse();
+        expect(consoleErrorStub.called).to.be.true;
+        expect(consoleErrorStub.thirdCall
+          .calledWithExactly('Missing required argument: integrity'))
+          .to.be.true;
         expect(exitStub.called).to.be.true;
         statStub.restore();
         stderrStub.restore();

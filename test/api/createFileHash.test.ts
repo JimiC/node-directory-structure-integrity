@@ -9,7 +9,7 @@ import { Integrity } from '../../src/app/integrity';
 import * as utils from '../../src/common/utils';
 import { checker } from '../helper';
 
-describe('IntegrityChecker: function \'createFileHash\' tests', function () {
+describe('Integrity: function \'createFileHash\' tests', function () {
 
   context('expects', function () {
 

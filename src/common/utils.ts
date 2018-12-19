@@ -1,5 +1,6 @@
 import { getHashes } from 'crypto';
-import path from 'path';
+import detectIndent = require('detect-indent');
+import { posix } from 'path';
 import { IndexedObject } from '../interfaces/indexedObject';
 
 /** @internal */
@@ -19,7 +20,7 @@ export function isSupportedHash(algorithm: string): boolean {
 /** @internal */
 export function getAbsolutePath(array: string[], index: number): string {
   const _root = process.platform !== 'win32' && array[0] !== '/' ? '/' : '';
-  return path.posix.join(_root, ...array.slice(0, index + 1));
+  return posix.join(_root, ...array.slice(0, index + 1));
 }
 
 /** @internal */
@@ -75,4 +76,8 @@ export function promisify<T>(func: (...args: any[]) => any): (...args: any[]) =>
       func(...args);
     });
   };
+}
+
+export function getIndentation(text: string): detectIndent.IndentInfo {
+  return detectIndent(text);
 }

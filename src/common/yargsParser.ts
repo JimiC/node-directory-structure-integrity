@@ -7,55 +7,57 @@ import { sortObject } from './utils';
 /** @internal */
 export class YargsParser {
   private readonly _commonOptions: { [key: string]: y.Options } = {
-    a: {
-      alias: 'algorithm',
+    algorithm: {
+      alias: 'a',
       description: 'The algorithm to use for hashing',
       type: 'string',
     },
-    e: {
-      alias: 'encoding',
+    encoding: {
+      alias: 'e',
       description: 'The encoding to use for hashing',
       type: 'string',
     },
-    p: {
-      alias: ['in', 'input'],
-      demandOption: true,
-      description: 'The path to the file or directory to hash',
-      type: 'string',
-    },
-    r: {
-      alias: 'verbose',
-      default: false,
-      description: 'Verbosely create hashes of a directory',
-      type: 'boolean',
-    },
-    x: {
-      alias: 'exclude',
+    exclude: {
+      alias: 'x',
       default: [],
       description: 'Files and/or directories paths to exclude',
       type: 'array',
     },
+    manifest: {
+      alias: 'm',
+      default: undefined,
+      description: 'The integrity hash gets persisted to, or read from, the project\'s manifest (package.json)',
+      type: 'boolean',
+    },
+    source: {
+      alias: 's',
+      demandOption: true,
+      description: 'The path to the file or directory to hash',
+      type: 'string',
+    },
+    verbose: {
+      alias: 'v',
+      default: false,
+      description: 'Verbosely create hashes of a directory',
+      type: 'boolean',
+    },
   };
 
   private readonly _createOptions: { [key: string]: y.Options } = {
-    m: {
-      alias: 'manifest',
-      default: true,
-      description: 'Saves the integrity hash in the project\'s manifest (package.json)',
-      type: 'boolean',
-    },
-    o: {
-      alias: ['out', 'output'],
-      description: 'The directory path where to persist the created integrity file',
+    output: {
+      alias: 'o',
+      description: 'The directory path where to persist the created integrity file' +
+        '(ignored when \'manifest\' option specified)',
       type: 'string',
     },
   };
 
   private readonly _checkOptions: { [key: string]: y.Options } = {
-    i: {
-      alias: 'integrity',
-      demandOption: true,
-      description: 'The integrity hash, json, file or directory path, to check against',
+    integrity: {
+      alias: 'i',
+      conflicts: 'manifest',
+      description: 'The integrity hash, JSON, file or directory path, to check against' +
+        ' ([required] when \'manifest\' option not specified)',
       type: 'string',
     },
   };
@@ -64,23 +66,23 @@ export class YargsParser {
     y
       .usage('Usage: $0 command [options]')
       .command('create [options]',
-        'Creates integrity hash from the provided input',
+        'Creates integrity hash from the provided source',
         sortObject({ ...this._createOptions, ...this._commonOptions }))
       .command('check [options]',
-        'Checks integrity hash against the provided input',
+        'Checks integrity hash against the provided source',
         sortObject({ ...this._checkOptions, ...this._commonOptions }))
       .demandCommand(1, 'Missing command')
       .recommendCommands()
       .options({
-        V: {
-          alias: 'version',
-          description: 'Show version number',
-          global: false,
-        },
-        h: {
-          alias: 'help',
+        help: {
+          alias: 'h',
           description: 'Show help',
           global: true,
+        },
+        version: {
+          alias: 'V',
+          description: 'Show version number',
+          global: false,
         },
       })
       .check((argv: y.Arguments) => this._validate(argv))
@@ -89,18 +91,20 @@ export class YargsParser {
 
   public parse(): IParsedArgs {
     const _pargs = y.parse(process.argv.slice(2));
+    // Set 'output' dir same as 'source' when not provided
     if (!_pargs.output) {
-      _pargs.output = fs.statSync(_pargs.input).isFile()
-        ? path.dirname(_pargs.input)
-        : _pargs.input;
+      _pargs.output = fs.statSync(_pargs.source).isFile()
+        ? path.dirname(_pargs.source)
+        : _pargs.source;
     }
     return {
       algorithm: _pargs.algorithm,
       command: _pargs._[0],
       encoding: _pargs.encoding,
       exclude: _pargs.exclude,
-      inPath: _pargs.input,
+      inPath: _pargs.source,
       integrity: _pargs.integrity,
+      manifest: _pargs.manifest,
       outPath: _pargs.output,
       verbose: _pargs.verbose,
     };
@@ -108,8 +112,11 @@ export class YargsParser {
 
   private _validate(argv: y.Arguments): boolean {
     let _errorMsg = '';
-    if (!fs.existsSync(argv.input)) {
-      _errorMsg = `ENOENT: no such file or directory, '${argv.input}'`;
+    if (!fs.existsSync(argv.source)) {
+      _errorMsg = `ENOENT: no such file or directory, '${argv.source}'`;
+    }
+    if (argv._[0] === 'check' && !argv.manifest && !argv.integrity) {
+      _errorMsg = 'Missing required argument: integrity';
     }
     if (_errorMsg) {
       throw new Error(_errorMsg);

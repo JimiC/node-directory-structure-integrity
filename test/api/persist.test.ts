@@ -5,7 +5,7 @@ import path from 'path';
 import * as sinon from 'sinon';
 import { Integrity } from '../../src/app/integrity';
 
-describe('IntegrityChecker: function \'persist\' tests', function () {
+describe('Integrity: function \'persist\' tests', function () {
 
   context('expects', function () {
 
@@ -20,14 +20,14 @@ describe('IntegrityChecker: function \'persist\' tests', function () {
       fixturesDirPath = path.resolve(__dirname, '../../../test/fixtures');
     });
 
-    context('to persist the created hash file ', function () {
+    context('to persist the created hash file', function () {
 
       it('on the provided path',
         async function () {
           // @ts-ignore
           const writeFileStub = sinon.stub(Integrity, '_writeFile');
-          await Integrity.persist({}, fixturesDirPath);
           const dirPath = path.resolve(fixturesDirPath, integrityTestFilename);
+          await Integrity.persist({}, fixturesDirPath);
           writeFileStub.restore();
           expect(writeFileStub.called).to.be.true;
           expect(writeFileStub.calledWith(dirPath)).to.be.true;

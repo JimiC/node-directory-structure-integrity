@@ -10,7 +10,7 @@ import * as utils from '../../src/common/utils';
 import { IntegrityOptions } from '../../src/interfaces/integrityOptions';
 import { checker } from '../helper';
 
-describe('IntegrityChecker: function \'createDirHash\' tests', function () {
+describe('Integrity: function \'createDirHash\' tests', function () {
 
   context('expects', function () {
 

@@ -27,6 +27,7 @@ describe('CLI: tests', function () {
       exclude: [],
       inPath: '',
       integrity: '',
+      manifest: false,
       outPath: './',
       verbose: false,
     };
@@ -35,6 +36,8 @@ describe('CLI: tests', function () {
     icCreateStub = sandbox.stub(Integrity, 'create');
     icCheckStub = sandbox.stub(Integrity, 'check');
     sandbox.stub(Integrity, 'persist');
+    sandbox.stub(Integrity, 'updateManifest');
+    sandbox.stub(Integrity, 'getManifestIntegrity');
     isTTY = process.stdout.isTTY;
     process.stdout.setMaxListeners(Infinity);
     process.stdin.setMaxListeners(Infinity);
@@ -54,6 +57,7 @@ describe('CLI: tests', function () {
         it('when creating an integrity file',
           async function () {
             pargs.command = 'create';
+            pargs.manifest = false;
             const exitStub = sandbox.stub(process, 'exit');
             const consoleLogStub = sandbox.stub(console, 'log');
             const stdoutStub = sandbox.stub(process.stdout, 'write');
@@ -66,15 +70,15 @@ describe('CLI: tests', function () {
             expect(spinnerLogStopSpy.calledOnce).to.be.true;
             expect(spinnerLogStopSpy.calledOnce).to.be.true;
             expect(spinnerLogStartSpy.calledBefore(spinnerLogStopSpy)).to.be.true;
-            expect(spinnerLogStartSpy.calledWith('Creating integrity hash file')).to.be.true;
+            expect(spinnerLogStartSpy.calledWith('Creating integrity hash')).to.be.true;
             const returnValue = spinnerLogStartSpy.returnValues[0];
             expect(spinnerLogStopSpy.calledWith(returnValue, 'Integrity hash file created')).to.be.true;
           });
 
-        it('when integrity check passes',
+        it('when creating an integrity poperty in manifest',
           async function () {
-            pargs.command = 'check';
-            icCheckStub.returns(true);
+            pargs.command = 'create';
+            pargs.manifest = true;
             const exitStub = sandbox.stub(process, 'exit');
             const consoleLogStub = sandbox.stub(console, 'log');
             const stdoutStub = sandbox.stub(process.stdout, 'write');
@@ -87,10 +91,58 @@ describe('CLI: tests', function () {
             expect(spinnerLogStopSpy.calledOnce).to.be.true;
             expect(spinnerLogStopSpy.calledOnce).to.be.true;
             expect(spinnerLogStartSpy.calledBefore(spinnerLogStopSpy)).to.be.true;
-            expect(spinnerLogStartSpy.calledWith(`Checking integrity of: '${pargs.inPath}'`)).to.be.true;
+            expect(spinnerLogStartSpy.calledWith('Creating integrity hash')).to.be.true;
             const returnValue = spinnerLogStartSpy.returnValues[0];
-            expect(spinnerLogStopSpy.calledWith(returnValue, 'Integrity validated')).to.be.true;
+            expect(spinnerLogStopSpy.calledWith(returnValue, 'Integrity hash created -> Manifest updated')).to.be.true;
           });
+
+        context('when integrity check passes against an integrity', function () {
+
+          it('file',
+            async function () {
+              pargs.command = 'check';
+              pargs.manifest = false;
+              icCheckStub.returns(true);
+              const exitStub = sandbox.stub(process, 'exit');
+              const consoleLogStub = sandbox.stub(console, 'log');
+              const stdoutStub = sandbox.stub(process.stdout, 'write');
+              const spinnerLogStartSpy = sandbox.spy(Logger.prototype, 'spinnerLogStart');
+              const spinnerLogStopSpy = sandbox.spy(Logger.prototype, 'spinnerLogStop');
+              await ndsi();
+              stdoutStub.restore();
+              consoleLogStub.restore();
+              exitStub.restore();
+              expect(spinnerLogStopSpy.calledOnce).to.be.true;
+              expect(spinnerLogStopSpy.calledOnce).to.be.true;
+              expect(spinnerLogStartSpy.calledBefore(spinnerLogStopSpy)).to.be.true;
+              expect(spinnerLogStartSpy.calledWith(`Checking integrity of: '${pargs.inPath}'`)).to.be.true;
+              const returnValue = spinnerLogStartSpy.returnValues[0];
+              expect(spinnerLogStopSpy.calledWith(returnValue, 'Integrity validated')).to.be.true;
+            });
+
+          it('in manifest',
+            async function () {
+              pargs.command = 'check';
+              pargs.manifest = true;
+              icCheckStub.returns(true);
+              const exitStub = sandbox.stub(process, 'exit');
+              const consoleLogStub = sandbox.stub(console, 'log');
+              const stdoutStub = sandbox.stub(process.stdout, 'write');
+              const spinnerLogStartSpy = sandbox.spy(Logger.prototype, 'spinnerLogStart');
+              const spinnerLogStopSpy = sandbox.spy(Logger.prototype, 'spinnerLogStop');
+              await ndsi();
+              stdoutStub.restore();
+              consoleLogStub.restore();
+              exitStub.restore();
+              expect(spinnerLogStopSpy.calledOnce).to.be.true;
+              expect(spinnerLogStopSpy.calledOnce).to.be.true;
+              expect(spinnerLogStartSpy.calledBefore(spinnerLogStopSpy)).to.be.true;
+              expect(spinnerLogStartSpy.calledWith(`Checking integrity of: '${pargs.inPath}'`)).to.be.true;
+              const returnValue = spinnerLogStartSpy.returnValues[0];
+              expect(spinnerLogStopSpy.calledWith(returnValue, 'Integrity validated')).to.be.true;
+            });
+
+        });
 
         it('when integrity check fails',
           async function () {
@@ -110,7 +162,7 @@ describe('CLI: tests', function () {
             expect(spinnerLogStartSpy.calledBefore(spinnerLogStopSpy)).to.be.true;
             expect(spinnerLogStartSpy.calledWith(`Checking integrity of: '${pargs.inPath}'`)).to.be.true;
             const returnValue = spinnerLogStartSpy.returnValues[0];
-            expect(spinnerLogStopSpy.calledWith(returnValue, 'Integrity failed')).to.be.true;
+            expect(spinnerLogStopSpy.calledWith(returnValue, 'Integrity check failed')).to.be.true;
           });
 
       });
@@ -169,7 +221,7 @@ describe('CLI: tests', function () {
           expect(ypParseStub.calledOnce).to.be.true;
         });
 
-      it('the IntegrityChecker \'create\' function',
+      it('the Integrity \'create\' function',
         async function () {
           pargs.command = 'create';
           const exitStub = sandbox.stub(process, 'exit');
@@ -182,7 +234,7 @@ describe('CLI: tests', function () {
           expect(icCreateStub.calledOnce).to.be.true;
         });
 
-      it('the IntegrityChecker \'check\' function',
+      it('the Integrity \'check\' function',
         async function () {
           pargs.command = 'check';
           const exitStub = sandbox.stub(process, 'exit');

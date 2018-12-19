@@ -23,7 +23,7 @@ export class Integrity {
     }
     const exclude = options ? options.exclude : undefined;
     const verbose = options ? options.verbose : undefined;
-    if (!options || !options.cryptoOptions) {
+    if (!options || !options.cryptoOptions || !options.cryptoOptions.algorithm || !options.cryptoOptions.encoding) {
       options = await this._detectOptions(fileOrDirPath, integrity);
       options.exclude = exclude;
       options.verbose = verbose || options.verbose;
@@ -113,16 +113,37 @@ export class Integrity {
     return _hash;
   }
 
-  public static persist(data: object, dirPath = './'): Promise<void> {
+  public static persist(indObj: IndexedObject, dirPath = './'): Promise<void> {
     const _filePath = path.resolve(dirPath, this._integrityFilename);
-    return this._writeFile(_filePath, JSON.stringify(data, null, 2));
+    return this._writeFile(_filePath, JSON.stringify(indObj, null, 2));
+  }
+
+  public static async getManifestIntegrity(): Promise<string> {
+    const _obj = await this._getManifest();
+    const data = JSON.stringify(_obj.manifest.integrity, null, _obj.indentation.indent || _obj.indentation.amount);
+    return Promise.resolve(data);
+  }
+
+  public static async updateManifest(indObj: IndexedObject): Promise<void> {
+    const _obj = await this._getManifest();
+    _obj.manifest.integrity = indObj;
+    const data = JSON.stringify(_obj.manifest, null, _obj.indentation.indent || _obj.indentation.amount);
+    return this._writeFile(this._manifestFile, data);
   }
 
   /** @internal */
-  private static _integrityFilename = '.integrity.json';
+  private static readonly _integrityFilename = '.integrity.json';
 
   /** @internal */
-  private static _defaultExclutions = [`${Integrity._integrityFilename}`];
+  private static readonly _manifestFile = 'package.json';
+
+  /** @internal */
+  private static readonly _defaultExclutions = [`${Integrity._integrityFilename}`,
+    '.git*',
+    '.hg*',
+    '.svn*',
+    'node_modules',
+  ];
 
   /** @internal */
   private static _exists = utils.promisify<boolean>(fs.exists);
@@ -410,9 +431,26 @@ export class Integrity {
     }
     const _schema = await this._readFile(_path, 'utf8') as string;
     const _validator = new ajv();
-    _validator.validate(JSON.parse(_schema), data);
+    _validator.validate(utils.parseJSON(_schema) as object, data);
     if (_validator.errors) {
       throw new Error(`EVALER: ${_validator.errorsText()}`);
     }
+  }
+
+  /** internal */
+  private static async _getManifest(): Promise<IndexedObject> {
+    if (!this._exists(this._manifestFile)) {
+      return Promise.reject(`Error: '${this._manifestFile}' not found
+  Ensure the process is done on the project's root directory`);
+    }
+    const _content = await this._readFile(this._manifestFile, 'utf8') as string;
+    const _manifest: IndexedObject | null = utils.parseJSON(_content);
+    if (!_manifest) {
+      return Promise.reject('Error: Manifest not found');
+    }
+    return {
+      indentation: utils.getIndentation(_content),
+      manifest: _manifest,
+    };
   }
 }

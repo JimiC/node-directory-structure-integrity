@@ -6,7 +6,7 @@ import { Integrity } from '../../src/app/integrity';
 import * as utils from '../../src/common/utils';
 import { checker } from '../helper';
 
-describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
+describe('Integrity: function \'createFilesHash\' tests', function () {
 
   context('expects', function () {
 

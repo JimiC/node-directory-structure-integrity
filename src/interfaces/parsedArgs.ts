@@ -6,6 +6,7 @@ export interface IParsedArgs {
   exclude: string[];
   inPath: string;
   integrity: string;
+  manifest: boolean;
   outPath: string;
   verbose: boolean;
 }
