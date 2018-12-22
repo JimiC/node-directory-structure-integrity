@@ -13,8 +13,9 @@ export = (async (): Promise<void> => {
   const pargs = new YargsParser().parse();
   const options: IntegrityOptions = {
     cryptoOptions: {
-      algorithm: pargs.algorithm,
+      dirAlgorithm: pargs.dirAlgorithm,
       encoding: pargs.encoding as HexBase64Latin1Encoding,
+      fileAlgorithm: pargs.fileAlgorithm,
     },
     exclude: pargs.exclude,
     verbose: pargs.verbose,

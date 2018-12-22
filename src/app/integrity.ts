@@ -4,6 +4,8 @@ import { createHash, getHashes, Hash, HexBase64Latin1Encoding } from 'crypto';
 import fs from 'fs';
 import mm from 'minimatch';
 import path from 'path';
+import * as constants from '../common/constants';
+import { CryptoEncoding } from '../common/enums';
 import * as utils from '../common/utils';
 import { ICryptoOptions } from '../interfaces/cryptoOptions';
 import { IndexedObject } from '../interfaces/indexedObject';
@@ -18,12 +20,17 @@ export class Integrity {
   public static async check(fileOrDirPath: string, integrity: string, options: IntegrityOptions): Promise<boolean>;
   public static async check(
     fileOrDirPath: string, integrity: string, options?: IntegrityOptions): Promise<boolean> {
-    if (!fileOrDirPath || typeof fileOrDirPath !== 'string' || !integrity || typeof integrity !== 'string') {
+    if (!fileOrDirPath || typeof fileOrDirPath !== 'string' ||
+      !integrity || typeof integrity !== 'string') {
       return false;
     }
     const exclude = options ? options.exclude : undefined;
     const verbose = options ? options.verbose : undefined;
-    if (!options || !options.cryptoOptions || !options.cryptoOptions.algorithm || !options.cryptoOptions.encoding) {
+    if (!options || !options.cryptoOptions ||
+      !options.cryptoOptions.fileAlgorithm ||
+      !options.cryptoOptions.dirAlgorithm ||
+      !options.cryptoOptions.encoding
+    ) {
       options = await this._detectOptions(fileOrDirPath, integrity);
       options.exclude = exclude;
       options.verbose = verbose || options.verbose;
@@ -70,8 +77,8 @@ export class Integrity {
 
   public static async createDirHash(dirPath: string, options?: IntegrityOptions)
     : Promise<IndexedObject> {
-    const _dirPathStats: fs.Stats = await this._lstat(dirPath);
-    if (!_dirPathStats.isDirectory()) {
+    const _ls: fs.Stats = await this._lstat(dirPath);
+    if (!_ls.isDirectory()) {
       throw new Error(`ENOTDIR: not a directory, '${path.basename(dirPath)}'`);
     }
     const _options = this._normalizeOptions(options);
@@ -95,12 +102,13 @@ export class Integrity {
     if (!_ls.isFile()) {
       throw new Error(`ENOTFILE: not a file, '${path.basename(filePath)}'`);
     }
-    if (path.basename(filePath) === this._integrityFilename) {
+    if (path.basename(filePath) === constants.integrityFilename) {
       throw new Error(`ENOTALW: file not allowed, '${path.basename(filePath)}'`);
     }
-    const { algorithm, encoding } = this._normalizeCryptoOptions(options);
+    const { fileAlgorithm, encoding } = this._normalizeCryptoOptions(options);
     return {
-      [path.basename(filePath)]: await this._computeStreamHash(filePath, createHash(algorithm), algorithm, encoding),
+      [path.basename(filePath)]: await this._computeStreamHash(
+        filePath, createHash(fileAlgorithm), fileAlgorithm, encoding),
     };
   }
 
@@ -114,31 +122,30 @@ export class Integrity {
   }
 
   public static persist(indObj: IndexedObject, dirPath = './'): Promise<void> {
-    const _filePath = path.resolve(dirPath, this._integrityFilename);
+    const _filePath = path.resolve(dirPath, constants.integrityFilename);
     return this._writeFile(_filePath, JSON.stringify(indObj, null, 2));
   }
 
   public static async getManifestIntegrity(): Promise<string> {
-    const _obj = await this._getManifest();
+    const _obj = await this._getManifestInfo();
     const data = JSON.stringify(_obj.manifest.integrity, null, _obj.indentation.indent || _obj.indentation.amount);
     return Promise.resolve(data);
   }
 
   public static async updateManifest(indObj: IndexedObject): Promise<void> {
-    const _obj = await this._getManifest();
+    const _obj = await this._getManifestInfo();
     _obj.manifest.integrity = indObj;
     const data = JSON.stringify(_obj.manifest, null, _obj.indentation.indent || _obj.indentation.amount);
-    return this._writeFile(this._manifestFile, data);
+    return this._writeFile(constants.manifestFile, data);
   }
 
   /** @internal */
-  private static readonly _integrityFilename = '.integrity.json';
+  // ['hex', 'base64', 'latin1']
+  private static readonly _allowedCryptoEncodings = Object.keys(CryptoEncoding)
+    .map<string>(k => CryptoEncoding[k as keyof typeof CryptoEncoding]);
 
   /** @internal */
-  private static readonly _manifestFile = 'package.json';
-
-  /** @internal */
-  private static readonly _defaultExclutions = [`${Integrity._integrityFilename}`,
+  private static readonly _defaultExclutions = [`${constants.integrityFilename}`,
     '.git*',
     '.hg*',
     '.svn*',
@@ -161,24 +168,37 @@ export class Integrity {
   private static _writeFile = utils.promisify<void>(fs.writeFile);
 
   /** @internal */
-  private static async _detectOptions(inPath: string, integrity: string): Promise<IntegrityOptions> {
-    const _getHash = (hashObj: IndexedObject): string => {
-      if (!hashObj || !hashObj.hashes) { return ''; }
-      const _first = hashObj.hashes[path.basename(inPath)];
-      return (_first && _first.hash) || _first;
+  private static async _getManifestInfo(): Promise<IndexedObject> {
+    if (!this._exists(constants.manifestFile)) {
+      return Promise.reject(`Error: '${constants.manifestFile}' not found
+  Ensure the process is done on the project's root directory`);
+    }
+    const _content = await this._readFile(constants.manifestFile, 'utf8') as string;
+    const _manifest: IndexedObject | null = utils.parseJSON(_content);
+    if (!_manifest) {
+      return Promise.reject('Error: Manifest not found');
+    }
+    return {
+      indentation: utils.getIndentation(_content),
+      manifest: _manifest,
     };
-    let _hashObj: IndexedObject;
+  }
+
+  /** @internal */
+  private static async _detectOptions(inPath: string, integrity: string): Promise<IntegrityOptions> {
+    // get the integrity object
+    let _integrityObj: IndexedObject;
     // 'integrity' is a file or directory path
     if (await this._exists(integrity)) {
       integrity = await this._pathCheck(integrity);
       const _content = await this._readFile(integrity, 'utf8');
-      _hashObj = utils.parseJSON(_content) as IndexedObject;
+      _integrityObj = utils.parseJSON(_content) as IndexedObject;
     } else {
       // 'integrity' is a stringified JSON
-      _hashObj = utils.parseJSON(integrity) as IndexedObject;
+      _integrityObj = utils.parseJSON(integrity) as IndexedObject;
       // 'integrity' is a hash
-      if (!_hashObj) {
-        _hashObj = {
+      if (!_integrityObj) {
+        _integrityObj = {
           hashes: {
             [path.basename(inPath)]: integrity,
           },
@@ -187,50 +207,94 @@ export class Integrity {
       }
     }
     const _options: IntegrityOptions = {};
-    const _hash = _getHash(_hashObj);
-    if (!_hash || typeof _hash !== 'string') {
-      return _options;
-    }
-    const _integrityMembers = _hash.split('-');
-    if (_integrityMembers.length < 2) {
-      return _options;
-    }
+    if (!_integrityObj || !_integrityObj.hashes) { return _options; }
+    await this._validate(_integrityObj);
+    const _first: IndexedObject = _integrityObj.hashes[path.basename(inPath)];
+    if (!_first) { return _options; }
     // detect verbosity
-    _options.verbose = !!_hashObj.hashes[path.basename(inPath)].hash;
-    // find encoding
-    const _enc = _integrityMembers.splice(-1)[0];
+    _options.verbose = !!_first.hash;
+    // detect options
+    _options.cryptoOptions = await this._detectCryptoOptions(_first, inPath);
+    return _options;
+  }
+
+  private static async _detectCryptoOptions(_first: IndexedObject, inPath: string): Promise<ICryptoOptions> {
+    const _cryptoOptions: ICryptoOptions = {};
+    // find integrity members
+    const _getIntegrityMembers = (hash: string): RegExpMatchArray | null => {
+      return hash.match(/^([a-zA-Z0-9-]*)-([\s\S]*)/);
+    };
+    const _integrityMembers = _getIntegrityMembers(_first.hash || _first);
+    if (!_integrityMembers || !_integrityMembers.length) { return _cryptoOptions; }
+    // detect encoding
+    const _enc = _integrityMembers[2];
     const _encoding: HexBase64Latin1Encoding | undefined =
       utils.hexRegexPattern.test(_enc)
-        ? 'hex'
+        ? CryptoEncoding.Hex
         : utils.base64RegexPattern.test(_enc)
-          ? 'base64'
+          ? CryptoEncoding.Base64
           : utils.latin1RegexPattern.test(_enc)
-            ? 'latin1'
+            ? CryptoEncoding.Latin1
             : undefined;
-    if (!_encoding) {
-      return _options;
-    }
-    // find algorithm
-    const _alg = _integrityMembers.join('-');
-    const _algorithm = getHashes().find(algorithm => algorithm === _alg);
-    // assign crypto options
-    _options.cryptoOptions = { algorithm: _algorithm, encoding: _encoding };
-    return _options;
+    if (!_encoding) { return _cryptoOptions; }
+    _cryptoOptions.encoding = _encoding;
+    // detect dirAlgorithm
+    const _cryptoHashes = getHashes();
+    const stat = await this._lstat(inPath);
+    _cryptoOptions.dirAlgorithm = stat.isDirectory()
+      ? _cryptoHashes.find(algorithm => algorithm === _integrityMembers[1])
+      : undefined;
+    // detect fileAlgorithm
+    const findFileAlgorithm = async (
+      content: IndexedObject,
+      pathTo: string,
+    ): Promise<string | undefined> => {
+      if (!content) { return undefined; }
+      for (const key of Object.keys(content)) {
+        const _hash = content[key];
+        const _path = path.join(pathTo, key);
+        if (!await this._exists(_path)) { continue; }
+        // it's a directory
+        if ((await this._lstat(_path)).isDirectory()) {
+          return findFileAlgorithm(_hash.contents, _path);
+        }
+        // it's a file
+        const _im = _getIntegrityMembers(_hash);
+        if (!_im || !_im.length) { return undefined; }
+        return _im[1];
+      }
+      return undefined;
+    };
+    _cryptoOptions.fileAlgorithm = stat.isFile()
+      ? _cryptoHashes.find(algorithm => algorithm === _integrityMembers[1])
+      : await findFileAlgorithm(_first.contents, inPath);
+    return _cryptoOptions;
   }
 
   /** @internal */
   private static _normalizeCryptoOptions(options?: ICryptoOptions): INormalizedCryptoOptions {
     const _check = (_options?: ICryptoOptions): INormalizedCryptoOptions | undefined => {
       if (!_options) { return _options; }
-      if (_options.algorithm && !utils.isSupportedHash(_options.algorithm)) {
-        throw new Error(`ENOSUP: Hash algorithm not supported: '${_options.algorithm}'`);
+      if (_options.fileAlgorithm && !utils.isSupportedHash(_options.fileAlgorithm)) {
+        throw new Error(`ENOSUP: Hash algorithm not supported: '${_options.fileAlgorithm}'`);
       }
-      if (_options.encoding && ['hex', 'base64', 'latin1'].indexOf(_options.encoding.toLowerCase()) === -1) {
+      if (_options.dirAlgorithm && !utils.isSupportedHash(_options.dirAlgorithm)) {
+        throw new Error(`ENOSUP: Hash algorithm not supported: '${_options.dirAlgorithm}'`);
+      }
+      if (_options.encoding && this._allowedCryptoEncodings.indexOf(_options.encoding.toLowerCase()) === -1) {
         throw new Error(`ENOSUP: Hash encoding not supported: '${_options.encoding}'`);
       }
-      return { algorithm: _options.algorithm || 'sha1', encoding: _options.encoding || 'base64' };
+      return {
+        dirAlgorithm: _options.dirAlgorithm || constants.defaultDirCryptoAlgorithm,
+        encoding: _options.encoding || constants.defaultCryptoEncoding,
+        fileAlgorithm: _options.fileAlgorithm || constants.defaultFileCryptoAlgorithm,
+      };
     };
-    return _check(options) || { algorithm: 'sha1', encoding: 'base64' };
+    return _check(options) || {
+      dirAlgorithm: constants.defaultDirCryptoAlgorithm,
+      encoding: constants.defaultCryptoEncoding,
+      fileAlgorithm: constants.defaultFileCryptoAlgorithm,
+    };
   }
 
   /** @internal */
@@ -270,11 +334,11 @@ export class Integrity {
   private static async _pathCheck(integrityPath: string): Promise<string> {
     const _ls: fs.Stats = await this._lstat(integrityPath);
     if (_ls.isDirectory()) {
-      return path.join(integrityPath, this._integrityFilename);
+      return path.join(integrityPath, constants.integrityFilename);
     }
     if (_ls.isFile()) {
-      if (path.basename(integrityPath) !== this._integrityFilename) {
-        throw new Error(`EINVNAME: filename must be '${this._integrityFilename}'`);
+      if (path.basename(integrityPath) !== constants.integrityFilename) {
+        throw new Error(`EINVNAME: filename must be '${constants.integrityFilename}'`);
       }
       return integrityPath;
     }
@@ -297,13 +361,15 @@ export class Integrity {
       const _hashes = integrity.hashes;
       const _dirList = path.dirname(_path).split(path.sep).filter(pt => pt);
       const _findHash = (_array: string[], hashes: IndexedObject): void => {
-        if (_array.length === 0) {
-          _has = _equals(hashes[_filenameOrDirectory], hashedObj.hashes[_filenameOrDirectory]);
+        if (!_array.length) {
+          const integrityHash = hashes[_filenameOrDirectory];
+          const hashedObjHash = hashedObj.hashes[_filenameOrDirectory];
+          _has = _equals(integrityHash, hashedObjHash) || _equals(integrityHash, hashedObjHash.hash);
           return;
         }
         const _rootHash = hashes[_array[0]];
         // non-verbosely directory hash
-        if (!_rootHash.contents) {
+        if (typeof _rootHash === 'string') {
           _has = _rootHash === hashedObj.hashes[_array[0]];
           return;
         }
@@ -369,7 +435,7 @@ export class Integrity {
 
   /** @internal */
   private static async _computeHash(dirPath: string, options: INormalizedIntegrityOptions): Promise<string> {
-    const { algorithm, encoding } = this._normalizeCryptoOptions(options.cryptoOptions);
+    const { dirAlgorithm, encoding }: INormalizedCryptoOptions = this._normalizeCryptoOptions(options.cryptoOptions);
     const _recurse = async (_dirPath: string, _hash: Hash, _algorithm: string): Promise<Hash> => {
       const _callback = async (filename: string): Promise<void> => {
         const _curPath = path.join(_dirPath, filename);
@@ -391,8 +457,8 @@ export class Integrity {
     if (options.exclude.some(excl => this._match(dirPath, excl))) {
       return '';
     }
-    const _finalHash = await _recurse(dirPath, createHash(algorithm), algorithm);
-    return `${algorithm}-${_finalHash.digest(encoding)}`;
+    const _finalHash = await _recurse(dirPath, createHash(dirAlgorithm), dirAlgorithm);
+    return `${dirAlgorithm}-${_finalHash.digest(encoding)}`;
   }
 
   /** @internal */
@@ -435,22 +501,5 @@ export class Integrity {
     if (_validator.errors) {
       throw new Error(`EVALER: ${_validator.errorsText()}`);
     }
-  }
-
-  /** internal */
-  private static async _getManifest(): Promise<IndexedObject> {
-    if (!this._exists(this._manifestFile)) {
-      return Promise.reject(`Error: '${this._manifestFile}' not found
-  Ensure the process is done on the project's root directory`);
-    }
-    const _content = await this._readFile(this._manifestFile, 'utf8') as string;
-    const _manifest: IndexedObject | null = utils.parseJSON(_content);
-    if (!_manifest) {
-      return Promise.reject('Error: Manifest not found');
-    }
-    return {
-      indentation: utils.getIndentation(_content),
-      manifest: _manifest,
-    };
   }
 }

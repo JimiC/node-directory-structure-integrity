@@ -21,10 +21,11 @@ describe('CLI: tests', function () {
 
   beforeEach(function () {
     pargs = {
-      algorithm: 'md5',
       command: '',
+      dirAlgorithm: 'md5',
       encoding: 'hex',
       exclude: [],
+      fileAlgorithm: 'md5',
       inPath: '',
       integrity: '',
       manifest: false,

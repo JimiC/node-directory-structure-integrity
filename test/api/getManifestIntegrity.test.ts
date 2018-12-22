@@ -75,7 +75,7 @@ describe('Integrity: function \'getManifestIntegrity\' tests', function () {
       it('using the indentation indent',
         async function () {
           // @ts-ignore
-          const getManifestStub = sinon.stub(Integrity, '_getManifest')
+          const getManifestStub = sinon.stub(Integrity, '_getManifestInfo')
             .resolves({ manifest: { integrity: { hash: '' } }, indentation: { indent: '  ' } });
           const sut = await Integrity.getManifestIntegrity();
           getManifestStub.restore();
@@ -86,7 +86,7 @@ describe('Integrity: function \'getManifestIntegrity\' tests', function () {
       it('using the indentation amount',
         async function () {
           // @ts-ignore
-          const getManifestStub = sinon.stub(Integrity, '_getManifest')
+          const getManifestStub = sinon.stub(Integrity, '_getManifestInfo')
             .resolves({ manifest: { integrity: { hash: '' } }, indentation: { amount: 2 } });
           const sut = await Integrity.getManifestIntegrity();
           getManifestStub.restore();

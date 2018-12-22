@@ -6,7 +6,7 @@
         "anotherFileToHash.txt": "sha1-EZ2w0rsSmXBOddIoz2IoOIuxGaQ=",
         "otherFileToHash.txt": "sha1-B8FJ4uKgHESSgMvJUyrj3ix2uG8="
       },
-      "hash": "sha1-2Kmnn7YpoFCNeNAAr4Xu9Eo4nLQ="
+      "hash": "sha512-Ze62278vNFKc3izakn2FgyvHIZEbnsuqKogaZLA1ihM1zk95RKlz+z7qk1XEysMaoJlpDNqSWx4PoPp2cFNBPw=="
     }
   }
 }

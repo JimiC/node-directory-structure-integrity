@@ -30,19 +30,25 @@ describe('YargsParser: tests', function () {
       function () {
         argv.value([...args]);
         const sut = parser.parse();
-        const props = ['algorithm', 'command', 'encoding',
-          'exclude', 'inPath', 'integrity',
-          'manifest', 'outPath', 'verbose'];
+        const props = ['dirAlgorithm', 'fileAlgorithm', 'command', 'encoding',
+          'exclude', 'inPath', 'integrity', 'manifest', 'outPath', 'verbose'];
         expect(sut).to.be.an('object');
         props.forEach(prop => expect(sut).to.be.haveOwnProperty(prop));
         expect(Object.keys(sut)).with.length(props.length);
       });
 
-    it('that the \'algorithm\' option gets parsed correctly',
+    it('that the \'fileAlgorithm\' option gets parsed correctly',
       function () {
-        args = [...args, '-a', 'sha'];
+        args = [...args, '--fa', 'sha'];
         argv.value(args);
-        expect(parser.parse()).to.be.have.property('algorithm', args[6]);
+        expect(parser.parse()).to.be.have.property('fileAlgorithm', args[6]);
+      });
+
+    it('that the \'dirAlgorithm\' option gets parsed correctly',
+      function () {
+        args = [...args, '--da', 'sha'];
+        argv.value(args);
+        expect(parser.parse()).to.be.have.property('dirAlgorithm', args[6]);
       });
 
     it('that the \'command\' gets parsed correctly',

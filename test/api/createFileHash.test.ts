@@ -39,7 +39,7 @@ describe('Integrity: function \'createFileHash\' tests', function () {
 
       it('the provided algorithm is not supported',
         function () {
-          const cryptoOptions = { algorithm: 'md1' };
+          const cryptoOptions = { fileAlgorithm: 'md1' };
           Integrity.createFileHash(fileToHashFilePath, cryptoOptions)
             .catch(error => expect(error).to.be.an.instanceof(Error).that.matches(/ENOSUP:/));
         });
@@ -105,7 +105,7 @@ describe('Integrity: function \'createFileHash\' tests', function () {
 
     it('to return an \'md5\' and \'base64\' encoded hash string',
       async function () {
-        const sut = await Integrity.createFileHash(fileToHashFilePath, { algorithm: 'md5' });
+        const sut = await Integrity.createFileHash(fileToHashFilePath, { fileAlgorithm: 'md5' });
         expect(sut).to.be.an('object')
           .and.to.haveOwnProperty(fileToHashFilename)
           .and.to.satisfy((hash: string) =>
@@ -116,7 +116,7 @@ describe('Integrity: function \'createFileHash\' tests', function () {
       async function () {
         const sut = await Integrity.createFileHash(
           fileToHashFilePath,
-          { algorithm: 'md5', encoding: 'hex' });
+          { fileAlgorithm: 'md5', encoding: 'hex' });
         expect(sut).to.be.an('object')
           .and.to.haveOwnProperty(fileToHashFilename)
           .and.to.satisfy((hash: string) =>

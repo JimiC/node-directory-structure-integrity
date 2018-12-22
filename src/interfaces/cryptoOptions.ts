@@ -1,6 +1,7 @@
 import { HexBase64Latin1Encoding } from 'crypto';
 
 export interface ICryptoOptions {
-  algorithm?: string;
+  dirAlgorithm?: string;
   encoding?: HexBase64Latin1Encoding;
+  fileAlgorithm?: string;
 }

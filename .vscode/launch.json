@@ -10,10 +10,10 @@
       "name": "Launch Program",
       "program": "${workspaceFolder}/out/src/cli.js",
       "args": [
-        "check",
-        "-m",
+        "create",
         "-s",
         "./out/src",
+        "-v"
       ],
       "preLaunchTask": "npm: build - dev",
       "stopOnEntry": false,

@@ -1,9 +1,10 @@
 /** @internal */
 export interface IParsedArgs {
-  algorithm: string;
   command: string;
+  dirAlgorithm: string;
   encoding: string;
   exclude: string[];
+  fileAlgorithm: string;
   inPath: string;
   integrity: string;
   manifest: boolean;

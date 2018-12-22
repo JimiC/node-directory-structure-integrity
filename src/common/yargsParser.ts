@@ -7,13 +7,15 @@ import { sortObject } from './utils';
 /** @internal */
 export class YargsParser {
   private readonly _commonOptions: { [key: string]: y.Options } = {
-    algorithm: {
-      alias: 'a',
-      description: 'The algorithm to use for hashing',
+    diralgorithm: {
+      alias: 'da',
+      default: 'sha512',
+      description: 'The algorithm to use for directory hashing',
       type: 'string',
     },
     encoding: {
       alias: 'e',
+      default: 'base64',
       description: 'The encoding to use for hashing',
       type: 'string',
     },
@@ -22,6 +24,12 @@ export class YargsParser {
       default: [],
       description: 'Files and/or directories paths to exclude',
       type: 'array',
+    },
+    filealgorithm: {
+      alias: 'fa',
+      default: 'sha1',
+      description: 'The algorithm to use for file hashing',
+      type: 'string',
     },
     manifest: {
       alias: 'm',
@@ -64,12 +72,12 @@ export class YargsParser {
 
   constructor() {
     y
-      .usage('Usage: $0 command [options]')
+      .usage('Usage: $0 {command} [options]')
       .command('create [options]',
-        'Creates integrity hash from the provided source',
+        'Creates integrity hash from the provided source (use \'--help\' for [options] details)',
         sortObject({ ...this._createOptions, ...this._commonOptions }))
       .command('check [options]',
-        'Checks integrity hash against the provided source',
+        'Checks integrity hash against the provided source (use \'--help\' for [options] details)',
         sortObject({ ...this._checkOptions, ...this._commonOptions }))
       .demandCommand(1, 'Missing command')
       .recommendCommands()
@@ -98,10 +106,11 @@ export class YargsParser {
         : _pargs.source;
     }
     return {
-      algorithm: _pargs.algorithm,
       command: _pargs._[0],
+      dirAlgorithm: _pargs.diralgorithm,
       encoding: _pargs.encoding,
       exclude: _pargs.exclude,
+      fileAlgorithm: _pargs.filealgorithm,
       inPath: _pargs.source,
       integrity: _pargs.integrity,
       manifest: _pargs.manifest,

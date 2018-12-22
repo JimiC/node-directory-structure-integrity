@@ -15,7 +15,7 @@ describe('Integrity: function \'updateManifest\' tests', function () {
           // @ts-ignore
           const writeFileStub = sinon.stub(Integrity, '_writeFile');
           // @ts-ignore
-          const getManifestStub = sinon.stub(Integrity, '_getManifest')
+          const getManifestStub = sinon.stub(Integrity, '_getManifestInfo')
             .resolves({ manifest: {}, indentation: { indent: '  ' } });
           await Integrity.updateManifest({});
           getManifestStub.restore();
@@ -32,7 +32,7 @@ describe('Integrity: function \'updateManifest\' tests', function () {
           // @ts-ignore
           const writeFileStub = sinon.stub(Integrity, '_writeFile');
           // @ts-ignore
-          const getManifestStub = sinon.stub(Integrity, '_getManifest')
+          const getManifestStub = sinon.stub(Integrity, '_getManifestInfo')
             .resolves({ manifest: {}, indentation: { amount: 2 } });
           await Integrity.updateManifest({});
           getManifestStub.restore();
@@ -49,7 +49,7 @@ describe('Integrity: function \'updateManifest\' tests', function () {
           // @ts-ignore
           const writeFileStub = sinon.stub(Integrity, '_writeFile');
           // @ts-ignore
-          const getManifestStub = sinon.stub(Integrity, '_getManifest')
+          const getManifestStub = sinon.stub(Integrity, '_getManifestInfo')
             .resolves({ manifest: { integrity: { hash: '' } }, indentation: { amount: 2 } });
           await Integrity.updateManifest({ hash: {} });
           getManifestStub.restore();
