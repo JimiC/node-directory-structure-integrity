@@ -164,40 +164,55 @@ describe('Utils: tests', function () {
         });
 
       it('to return an Error when the passed function throws one',
-        function () {
+        async function () {
           const stub = sinon.stub().callsFake(cb => cb(new Error()));
-          return utils.promisify(stub)()
-            .catch(error => expect(error).to.be.an.instanceof(Error));
+          try {
+            await utils.promisify(stub)();
+          } catch (error) {
+            expect(error).to.be.an.instanceof(Error);
+          }
         });
 
       it('to correctly handle a \'true\' response',
-        function () {
+        async function () {
           const stub = sinon.stub().callsFake(cb => cb(true));
-          return utils.promisify(stub)()
-            .then(response => expect(response).to.be.true);
+          const response = await utils.promisify(stub)();
+          return expect(response).to.be.true;
         });
 
       it('to correctly handle a \'false\' response',
-        function () {
+        async function () {
           const stub = sinon.stub().callsFake(cb => cb(false));
-          return utils.promisify(stub)()
-            .then(response => expect(response).to.be.false);
+          const response = await utils.promisify(stub)();
+          expect(response).to.be.false;
         });
 
       it('to return all named arguments of the passed function',
-        function () {
+        async function () {
           const stub = sinon.stub().callsFake(cb => cb(null, 1, 2, 3));
           (stub as IndexedObject)[typeof utils.promisifyArgumentNames] = ['one', 'two', 'three'];
-          return utils.promisify(stub)()
-            .then(response => expect(response).to.eql({ one: 1, two: 2, three: 3 }));
+          const response = await utils.promisify(stub)();
+          return expect(response).to.eql({ one: 1, two: 2, three: 3 });
         });
 
       it('to return named arguments of the passed function',
-        function () {
+        async function () {
           const stub = sinon.stub().callsFake(cb => cb(null, 1, 2, 3));
           (stub as IndexedObject)[typeof utils.promisifyArgumentNames] = ['one', 'two'];
-          return utils.promisify(stub)()
-            .then(response => expect(response).to.eql({ one: 1, two: 2 }));
+          const response = await utils.promisify(stub)();
+          return expect(response).to.eql({ one: 1, two: 2 });
+        });
+
+    });
+
+    context('function \'getIndentation\'', function () {
+
+      it('to return indent info',
+        function () {
+          const info = utils.getIndentation('  ');
+          expect(info.amount).to.equal(2);
+          expect(info.indent).to.equal('  ');
+          expect(info.type).to.equal('space');
         });
 
     });

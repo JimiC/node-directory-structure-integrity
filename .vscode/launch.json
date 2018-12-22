@@ -11,10 +11,9 @@
       "program": "${workspaceFolder}/out/src/cli.js",
       "args": [
         "create",
-        "-p",
-        "test/fixtures",
-        "-r",
-        "true"
+        "-s",
+        "./out/src",
+        "-v"
       ],
       "preLaunchTask": "npm: build - dev",
       "stopOnEntry": false,

@@ -6,7 +6,7 @@ import { Integrity } from '../../src/app/integrity';
 import * as utils from '../../src/common/utils';
 import { checker } from '../helper';
 
-describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
+describe('Integrity: function \'createFilesHash\' tests', function () {
 
   context('expects', function () {
 
@@ -42,7 +42,7 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
 
       it('the provided algorithm is not supported',
         function () {
-          const cryptoOptions = { algorithm: 'md1' };
+          const cryptoOptions = { fileAlgorithm: 'md1' };
           Integrity.createFilesHash([fileToHashFilePath], cryptoOptions)
             .catch(error => expect(error).to.be.an.instanceof(Error).that.matches(/ENOSUP:/));
         });
@@ -63,8 +63,8 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
         const sut = await Integrity.createFilesHash(files);
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
-        .and.to.satisfy((hash: string) =>
-        checker(hash, utils.base64RegexPattern, 'EZ2w0rsSmXBOddIoz2IoOIuxGaQ='));
+          .and.to.satisfy((hash: string) =>
+            checker(hash, utils.base64RegexPattern, 'EZ2w0rsSmXBOddIoz2IoOIuxGaQ='));
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
           .and.to.satisfy((hash: string) =>
             checker(hash, utils.base64RegexPattern, 'B8FJ4uKgHESSgMvJUyrj3ix2uG8='));
@@ -77,10 +77,14 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
           .and.to.satisfy((hash: string) =>
-            checker(hash, utils.hexRegexPattern, '119db0d2bb1299704e75d228cf6228388bb119a4', 'sha1', sha1Length));
+            checker(hash, utils.hexRegexPattern,
+              '119db0d2bb1299704e75d228cf6228388bb119a4',
+              'sha1', sha1Length));
         expect(sut).to.haveOwnProperty(otherFileToHashFilename)
           .and.to.satisfy((hash: string) =>
-            checker(hash, utils.hexRegexPattern, '07c149e2e2a01c449280cbc9532ae3de2c76b86f', 'sha1', sha1Length));
+            checker(hash, utils.hexRegexPattern,
+              '07c149e2e2a01c449280cbc9532ae3de2c76b86f',
+              'sha1', sha1Length));
       });
 
     it('to return an \'sha1\' and \'latin1\' encoded hash JSON',
@@ -99,7 +103,7 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
     it('to return an \'md5\' and \'base64\' encoded hash JSON',
       async function () {
         const files = [anotherFileToHashFilePath, otherFileToHashFilePath];
-        const sut = await Integrity.createFilesHash(files, { algorithm: 'md5' });
+        const sut = await Integrity.createFilesHash(files, { fileAlgorithm: 'md5' });
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
           .and.to.satisfy((hash: string) =>
@@ -112,7 +116,7 @@ describe('IntegrityChecker: function \'createFilesHash\' tests', function () {
     it('to return an \'md5\' and \'hex\' encoded hash JSON',
       async function () {
         const files = [anotherFileToHashFilePath, otherFileToHashFilePath];
-        const sut = await Integrity.createFilesHash(files, { algorithm: 'md5', encoding: 'hex' });
+        const sut = await Integrity.createFilesHash(files, { fileAlgorithm: 'md5', encoding: 'hex' });
         expect(sut).to.be.an('object');
         expect(sut).to.haveOwnProperty(anotherFileToHashFilename)
           .and.to.satisfy((hash: string) =>

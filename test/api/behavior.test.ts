@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import path from 'path';
 import { Integrity } from '../../src/app/integrity';
 
-describe('IntegrityChecker: behavior tests', function () {
+describe('Integrity: behavior tests', function () {
 
   context('expects', function () {
 
