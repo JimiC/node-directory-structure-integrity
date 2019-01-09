@@ -5,7 +5,7 @@ import * as sinon from 'sinon';
 import { Integrity } from '../../src/app/integrity';
 import { IntegrityObject } from '../../src/interfaces/integrityObject';
 
-describe('Integrity: function \'updateManifest\' tests', function () {
+describe('Integrity: function \'updateManifestIntegrity\' tests', function () {
 
   context('expects', function () {
 
@@ -24,7 +24,7 @@ describe('Integrity: function \'updateManifest\' tests', function () {
           // @ts-ignore
           const getManifestStub = sinon.stub(Integrity, '_getManifestInfo')
             .resolves({ manifest: {}, indentation: { indent: '  ' } });
-          await Integrity.updateManifest(integrityTestObject);
+          await Integrity.updateManifestIntegrity(integrityTestObject);
           getManifestStub.restore();
           writeFileStub.restore();
           expect(getManifestStub.calledOnce).to.be.true;
@@ -41,7 +41,7 @@ describe('Integrity: function \'updateManifest\' tests', function () {
           // @ts-ignore
           const getManifestStub = sinon.stub(Integrity, '_getManifestInfo')
             .resolves({ manifest: {}, indentation: { amount: 2 } });
-          await Integrity.updateManifest(integrityTestObject);
+          await Integrity.updateManifestIntegrity(integrityTestObject);
           getManifestStub.restore();
           writeFileStub.restore();
           expect(getManifestStub.calledOnce).to.be.true;
@@ -58,7 +58,7 @@ describe('Integrity: function \'updateManifest\' tests', function () {
           // @ts-ignore
           const getManifestStub = sinon.stub(Integrity, '_getManifestInfo')
             .resolves({ manifest: { integrity: { hash: '' } }, indentation: { amount: 2 } });
-          await Integrity.updateManifest(integrityTestObject);
+          await Integrity.updateManifestIntegrity(integrityTestObject);
           getManifestStub.restore();
           writeFileStub.restore();
           expect(getManifestStub.calledOnce).to.be.true;

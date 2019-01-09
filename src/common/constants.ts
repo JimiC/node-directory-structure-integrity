@@ -15,3 +15,12 @@ export const defaultDirCryptoAlgorithm = 'sha512';
 
 /** @internal */
 export const defaultCryptoEncoding: HexBase64Latin1Encoding = CryptoEncoding.Base64;
+
+/** @internal */
+export const defaultExclutions = [
+  `${integrityFilename}`,
+  '.git*',
+  '.hg*',
+  '.svn*',
+  'node_modules',
+];

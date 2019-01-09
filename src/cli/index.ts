@@ -31,7 +31,7 @@ export = (async (): Promise<void> => {
         await Integrity.persist(hash, pargs.outPath);
         message = 'Integrity hash file created';
       } else {
-        await Integrity.updateManifest(hash);
+        await Integrity.updateManifestIntegrity(hash);
         message = 'Integrity hash created -> Manifest updated';
       }
     }

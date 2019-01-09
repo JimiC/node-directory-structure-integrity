@@ -122,7 +122,7 @@ export class Integrity {
     return Promise.resolve(data);
   }
 
-  public static async updateManifest(intObj: IntegrityObject): Promise<void> {
+  public static async updateManifestIntegrity(intObj: IntegrityObject): Promise<void> {
     const _obj = await this._getManifestInfo();
     _obj.manifest.integrity = intObj;
     const data = JSON.stringify(_obj.manifest, null, _obj.indentation.indent || _obj.indentation.amount);
@@ -134,15 +134,7 @@ export class Integrity {
   private static readonly _allowedCryptoEncodings = Object.keys(CryptoEncoding)
     .map<string>(k => CryptoEncoding[k as keyof typeof CryptoEncoding]);
 
-  /** @internal */
-  private static readonly _defaultExclutions = [`${constants.integrityFilename}`,
-    '.git*',
-    '.hg*',
-    '.svn*',
-    'node_modules',
-  ];
-
-  /** @internal */
+    /** @internal */
   private static _exists = utils.promisify<boolean>(fs.exists);
 
   /** @internal */
@@ -296,9 +288,9 @@ export class Integrity {
       const _include = _exclude.filter(excl => excl.startsWith('!')).map(excl => excl.slice(1));
       _exclude = _exclude.filter(excl => !excl.startsWith('!'));
       if (!_exclude.length) {
-        _exclude = _exclude.concat(this._defaultExclutions);
+        _exclude = _exclude.concat(constants.defaultExclutions);
       } else {
-        this._defaultExclutions.forEach(excl => _exclude.push(excl));
+        constants.defaultExclutions.forEach(excl => _exclude.push(excl));
       }
       return {
         exclude: _exclude,
