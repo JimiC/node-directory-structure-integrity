@@ -26,12 +26,12 @@ export = (async (): Promise<void> => {
   try {
     if (pargs.command === 'create') {
       spinner = logger.spinnerLogStart('Creating integrity hash', id);
-      const hash: IntegrityObject = await Integrity.create(pargs.inPath, options);
+      const intObj: IntegrityObject = await Integrity.create(pargs.inPath, options);
       if (!pargs.manifest) {
-        await Integrity.persist(hash, pargs.outPath);
+        await Integrity.persist(intObj, pargs.outPath);
         message = 'Integrity hash file created';
       } else {
-        await Integrity.updateManifestIntegrity(hash);
+        await Integrity.updateManifestIntegrity(intObj);
         message = 'Integrity hash created -> Manifest updated';
       }
     }

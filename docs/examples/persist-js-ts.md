@@ -7,20 +7,20 @@
 `ES6+`
 
 ```js
-// Assuming you have previously created an integrity hashes object
+// Assuming you have previously created an integrity object
 
-// Persist them on disk
-await Integrity.persist(hashes)
+// Persist it on disk
+await Integrity.persist(intObj)
 console.log('Integrity file saved')
 ```
 
 `TypeScript`
 
 ```ts
-// Assuming you have previously created an integrity hashes object
+// Assuming you have previously created an integrity object
 
-// Persist them on disk
-await Integrity.persist(hashes);
+// Persist it on disk
+await Integrity.persist(intObj);
 console.log('Integrity file saved');
 ```
 
@@ -31,20 +31,20 @@ console.log('Integrity file saved');
 > Persist the integrity object on a specific directory (absolute path)
 
 ```js
-// Assuming you have previously created an integrity hashes object
+// Assuming you have previously created an integrity object
 
-// Persist them on disk
-await Integrity.persist(hashes, '/dir/to/persist/the/integrity/object')
+// Persist it on disk
+await Integrity.persist(intObj, '/dir/to/persist/the/integrity/object')
 console.log('Integrity file saved')
 ```
 
 `TypeScript`
 
 ```ts
-// Assuming you have previously created an integrity hashes object
+// Assuming you have previously created an integrity object
 
-// Persist them on disk
-await Integrity.persist(hashes, '/dir/to/persist/the/integrity/object');
+// Persist it on disk
+await Integrity.persist(intObj, '/dir/to/persist/the/integrity/object');
 console.log('Integrity file saved');
 ```
 
@@ -55,19 +55,19 @@ console.log('Integrity file saved');
 `ES6+`
 
 ```js
-// Assuming you have previously created an integrity hashes object
+// Assuming you have previously created an integrity object
 
-// Persist them on disk
-await Integrity.persist(hashes, './dir/to/persist/the/integrity/object')
+// Persist it on disk
+await Integrity.persist(intObj, './dir/to/persist/the/integrity/object')
 console.log('Integrity file saved')
 ```
 
 `TypeScript`
 
 ```ts
-// Assuming you have previously created an integrity hashes object
+// Assuming you have previously created an integrity object
 
-// Persist them on disk
-await Integrity.persist(hashes, './dir/to/persist/the/integrity/object');
+// Persist it on disk
+await Integrity.persist(intObj, './dir/to/persist/the/integrity/object');
 console.log('Integrity file saved');
 ```

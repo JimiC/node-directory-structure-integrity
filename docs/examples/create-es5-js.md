@@ -2,12 +2,12 @@
 
 ## `.create` (ECMAScript 5)
 
->Create a verbosely integrity object of the root directory, using the default `md5` algorithm and `hex` encoding
+>Create a verbosely integrity object of the root directory, using the default `sha1` and `sha512` algorithm and `hex` encoding
 
 ```js
 Integrity.create('./')
-  .then(hashes => {
-    // Do something with the hashes here
+  .then(intObj => {
+    // Do something with the integrity object here
     // It's advised not to modify them
     // as it will certainly lead to integrity check failure
     // when you'll try to check against them
@@ -17,13 +17,13 @@ Integrity.create('./')
 
 ---
 
-> Create a verbosely integrity object of the root directory, using the `sha1` algorithm and `base64` encoding
+> Create a verbosely integrity object of the root directory, using the `sha256` algorithm and `base64` encoding
 
 ```js
-var options = { cryptoOptions: { algorithm: 'sha1', encoding: 'base64' } }
+var options = { cryptoOptions: { dirAlgorithm: 'sha256', encoding: 'base64', fileAlgorithm: "sha256" } }
 Integrity.create('./', options)
-  .then(hashes => {
-    // Do something with the hashes here
+  .then(intObj => {
+    // Do something with the integrity object here
     // It's advised not to modify them
     // as it will certainly lead to integrity check failure
     // when you'll try to check against them
@@ -37,8 +37,8 @@ Integrity.create('./', options)
 
 ```js
 Integrity.create('./sub')
-  .then(hashes => {
-    // Do something with the hashes here
+  .then(intObj => {
+    // Do something with the integrity object here
     // It's advised not to modify them
     // as it will certainly lead to integrity check failure
     // when you'll try to check against them
@@ -53,8 +53,8 @@ Integrity.create('./sub')
 ```js
 var options = { verbose: false }
 Integrity.create('./fileToHash.txt', options)
-  .then(hashes => {
-    // Do something with the hashes here
+  .then(intObj => {
+    // Do something with the integrity object here
     // It's advised not to modify them
     // as it will certainly lead to integrity check failure
     // when you'll try to check against them
@@ -68,8 +68,8 @@ Integrity.create('./fileToHash.txt', options)
 
 ```js
 Integrity.create('./sub/fileToHash.txt')
-  .then(hashes => {
-    // Do something with the hashes here
+  .then(intObj => {
+    // Do something with the integrity object here
     // It's advised not to modify them
     // as it will certainly lead to integrity check failure
     // when you'll try to check against them
@@ -84,8 +84,8 @@ Integrity.create('./sub/fileToHash.txt')
 ```js
 var options = { exclude: ['fileToExclude.txt'] }
 Integrity.create('./dir', options)
-  .then(hashes => {
-    // Do something with the hashes here
+  .then(intObj => {
+    // Do something with the integrity object here
     // It's advised not to modify them
     // as it will certainly lead to integrity check failure
     // when you'll try to check against them
@@ -100,8 +100,8 @@ Integrity.create('./dir', options)
 ```js
 var options = { exclude: ['sub'] }
 Integrity.create('./dir', options)
-  .then(hashes => {
-    // Do something with the hashes here
+  .then(intObj => {
+    // Do something with the integrity object here
     // It's advised not to modify them
     // as it will certainly lead to integrity check failure
     // when you'll try to check against them

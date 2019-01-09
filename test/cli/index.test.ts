@@ -37,7 +37,7 @@ describe('CLI: tests', function () {
     icCreateStub = sandbox.stub(Integrity, 'create');
     icCheckStub = sandbox.stub(Integrity, 'check');
     sandbox.stub(Integrity, 'persist');
-    sandbox.stub(Integrity, 'updateManifest');
+    sandbox.stub(Integrity, 'updateManifestIntegrity');
     sandbox.stub(Integrity, 'getManifestIntegrity');
     isTTY = process.stdout.isTTY;
     process.stdout.setMaxListeners(Infinity);
@@ -76,7 +76,7 @@ describe('CLI: tests', function () {
             expect(spinnerLogStopSpy.calledWith(returnValue, 'Integrity hash file created')).to.be.true;
           });
 
-        it('when creating an integrity poperty in manifest',
+        it('when creating an integrity property in manifest',
           async function () {
             pargs.command = 'create';
             pargs.manifest = true;

@@ -20,7 +20,7 @@ const hashes = await Integrity.createFilesHash(listOfFiles)
 
 ```ts
 const listOfFiles = ['/path/to/file1.txt', './path/to/file2.txt'];
-const hashes: IndexedObject = await Integrity.createFilesHash(listOfFiles);
+const hashes: IHashObject = await Integrity.createFilesHash(listOfFiles);
 
 // Do something with the hashes here
 // It's advised not to modify them

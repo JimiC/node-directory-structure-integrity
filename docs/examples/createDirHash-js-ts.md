@@ -18,7 +18,7 @@ const hashes = await Integrity.createDirHash('./')
 `TypeScript`
 
 ```ts
-const hashes: IndexedObject = await Integrity.createDirHash('./');
+const hashes: IHashObject = await Integrity.createDirHash('./');
 
 // Do something with the hashes here
 // It's advised not to modify them
@@ -46,7 +46,7 @@ const hashes = await Integrity.createDirHash('./', options)
 
 ```ts
 const options: IntegrityOptions = { cryptoOptions: { algorithm: 'sha1', encoding: 'base64' } };
-const hashes: IndexedObject = await Integrity.createDirHash('./', options);
+const hashes: IHashObject = await Integrity.createDirHash('./', options);
 
 // Do something with the hashes here
 // It's advised not to modify them
@@ -72,7 +72,7 @@ const hashes = await Integrity.createDirHash('./sub')
 `TypeScript`
 
 ```ts
-const hashes: IndexedObject = await Integrity.createDirHash('./sub');
+const hashes: IHashObject = await Integrity.createDirHash('./sub');
 
 // Do something with the hashes here
 // It's advised not to modify them
@@ -100,7 +100,7 @@ const hashes = await Integrity.createDirHash('./dir', options)
 
 ```ts
 const options: IntegrityOptions = { exclude: ['fileToExclude.txt'] };
-const hashes: IndexedObject = await Integrity.createDirHash('./dir', options);
+const hashes: IHashObject = await Integrity.createDirHash('./dir', options);
 
 // Do something with the hashes here
 // It's advised not to modify them
@@ -128,7 +128,7 @@ const hashes = await Integrity.createDirHash('./dir', options)
 
 ```ts
 const options: IntegrityOptions = { exclude: ['sub'] };
-const hashes: IndexedObject = await Integrity.createDirHash('./dir', options);
+const hashes: IHashObject = await Integrity.createDirHash('./dir', options);
 
 // Do something with the hashes here
 // It's advised not to modify them

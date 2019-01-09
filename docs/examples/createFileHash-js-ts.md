@@ -18,7 +18,7 @@ const hashes = await Integrity.createFileHash('/path/to/fileToHash.txt')
 `TypeScript`
 
 ```ts
-const hashes: IndexedObject = await Integrity.createFileHash('/path/to/fileToHash.txt');
+const hashes: IHashObject = await Integrity.createFileHash('/path/to/fileToHash.txt');
 
 // Do something with the hashes here
 // It's advised not to modify them

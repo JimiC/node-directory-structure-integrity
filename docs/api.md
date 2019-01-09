@@ -14,9 +14,9 @@ All `API` calls are `static` members of the `Integrity` class.
 
 >## check
 
-`Description`: Checks the integrity of a directory or a file
+`Description`: Checks the integrity of a directory or a file.
 
-`Info`: The `inPath` can be an absolute or relative path.
+`Info`: The `fileOrDirPath` can be an absolute or relative path.
 
 `Return Type`: `Promise<boolean>`
 
@@ -24,10 +24,9 @@ All `API` calls are `static` members of the `Integrity` class.
 
 |Name|Type|Attribute|Default|Description|
 |:---:|:---:|:---:|:---:|:---:|
-|inPath|string|||the path of the file or directory to check|
+|fileOrDirPath|string|||the path of the file or directory to check|
 |integrity|string|||the path of the directory containing the integrity file or the path to the integrity file or a stringified integrity JSON or a hash string, to check against|
 |options|IntegrityOptions|optional|see [options](#options) section|the `integrity` options to use|
-|detectOptions|boolean|optional||detect the options used to create the `integrity` object|
 
 `Examples`
 
@@ -40,15 +39,15 @@ All `API` calls are `static` members of the `Integrity` class.
 
 `Description`: Creates an integrity object of a directory or file.
 
-`Info`: `create` is a top-level helper function designed to internally determine whether to use `createDirHash` or `createFileHash`, saving you the coding hassle. Usually, `create` will be the function you are going to use, when you want to create an `integrity` object. The `inPath` can be an absolute or relative path.
+`Info`: `create` is a top-level helper function designed to internally determine whether to use `createDirHash` or `createFileHash`, saving you the coding hassle. Usually, `create` will be the function you are going to use, when you want to create an `integrity` object. The `fileOrDirPath` can be an absolute or relative path.
 
-`Return Type`: `Promise<IndexedObject>`
+`Return Type`: `Promise<IntegrityObject>`
 
 `Parameters`:
 
 |Name|Type|Attribute|Default|Description|
 |:---:|:---:|:---:|:---:|:---:|
-|inPath|string|||the path of the file or directory to hash|
+|fileOrDirPath|string|||the path of the file or directory to hash|
 |options|IntegrityOptions|optional|see [options](#options) section|the `integrity` options to use|
 
 `Examples`
@@ -60,11 +59,11 @@ All `API` calls are `static` members of the `Integrity` class.
 
 >## createDirHash
 
-`Description`: Creates an integrity object of a directory
+`Description`: Creates a hash object of a directory.
 
 `Info`: `createDirHash` is a function designed to create an `integrity` object for a directory. The `dirPath` can be an absolute or relative path. Creating a non-verbosely `integrity` object will compute all contents hashes combined.
 
-`Return Type`: `Promise<IndexedObject>`
+`Return Type`: `Promise<IHashObject>`
 
 `Parameters`:
 
@@ -82,11 +81,11 @@ All `API` calls are `static` members of the `Integrity` class.
 
 >## createFileHash
 
-`Description`: Creates an integrity object of a file
+`Description`: Creates a hash object of a file.
 
 `Info`: `createFileHash` is a function designed to create an `integrity` object for a file. The `filePath` can be an absolute or relative path.
 
-`Return Type`: `Promise<IndexedObject>`
+`Return Type`: `Promise<IHashObject>`
 
 `Parameters`:
 
@@ -104,11 +103,11 @@ All `API` calls are `static` members of the `Integrity` class.
 
 >## createFilesHash
 
-`Description`: Creates an integrity object of a list of files
+`Description`: Creates a hash object of a list of files.
 
 `Info`: `createFilesHash` is a function designed to create an `integrity` object for a list of files. The `filenames` can be absolute or relative paths.
 
-`Return Type`: `Promise<IndexedObject>`
+`Return Type`: `Promise<IHashObject>`
 
 `Parameters`:
 
@@ -126,7 +125,7 @@ All `API` calls are `static` members of the `Integrity` class.
 
 >## persist
 
-`Description`: Persists the integrity object on disk
+`Description`: Persists the integrity object on disk.
 
 `Info`: `persist` is a function designed to persist the created integrity object on disk. Usually, you will use `persist` whenever you create an `integrity` object. If the `dirPath` parameter is omitted, the `integrity` object will be persisted at the root directory, from where the function gets called. The `dirPath` can be an absolute or relative path.
 
@@ -136,13 +135,49 @@ All `API` calls are `static` members of the `Integrity` class.
 
 |Name|Type|Attribute|Default|Description|
 |:---:|:---:|:---:|:---:|:---:|
-|data|string|||the data to persist|
+|intObj|IntegrityObject|||the integrity object to persist|
 |dirPath|string|optional|`./`|the path of the directory to persist the data to|
 
 `Examples`
 
 - [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/persist-es5-js.md)
 - [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/persist-js-ts.md)
+
+---
+>## getManifestIntegrity
+
+`Description`: Gets the integrity object from the manifest file.
+
+`Info`: `getManifestIntegrity` is a function designed to retrieve a stringified version of the integrity object from the project's manifest file (`project.json`).
+
+`Return Type`: `Promise<string>`
+
+`Parameters`: None
+
+`Examples`
+
+- [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/getManifestIntegrity-es5-js.md)
+- [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/getManifestIntegrity-js-ts.md)
+
+---
+>## updateManifestIntegrity
+
+`Description`: Updates the manifest file (`project.json`) with the integrity object.
+
+`Info`: `updateManifestIntegrity` is a function designed to update the project's manifest file (`project.json`) with the integrity object.
+
+`Return Type`: `Promise<void>`
+
+`Parameters`:
+
+|Name|Type|Attribute|Default|Description|
+|:---:|:---:|:---:|:---:|:---:|
+|intObj|IntegrityObject|||the integrity object|
+
+`Examples`
+
+- [ES5](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/updateManifestIntegrity-es5-js.md)
+- [ES6+, Typescript](https://github.com/JimiC/node-directory-structure-integrity/blob/master/docs/examples/updateManifestIntegrity-js-ts.md)
 
 ---
 
@@ -152,7 +187,7 @@ All `API` calls are `static` members of the `Integrity` class.
 
 |Name|Type|Attribute|Default|Description|
 |:---:|:---:|:---:|:---:|:---:|
-|cryptoOptions|ICryptoOptions|optional||the `crypto` options to use|
+|cryptoOptions|ICryptoOptions|optional|see `ICryptoOptions` |the `crypto` options to use|
 |verbose|boolean|optional|true|whether the computed hashes are returned in a verbosely or non-verbosely structure|
 |exclude|string[]|optional|[]|the paths to be excluded, supports also `glob` expressions (positive & negative)|
 
@@ -160,8 +195,9 @@ All `API` calls are `static` members of the `Integrity` class.
 
 |Name|Type|Attribute|Default|Description|
 |:---:|:---:|:---:|:---:|:---:|
-|algorithm|string|optional|`md5`|the `crypto` algorithm to use|
+|dirAlgorithm|string|optional|`sha512`|the `crypto` algorithm to use for directories|
 |encoding|HexBase64Latin1Encoding|optional|`hex`|the `crypto` encoding to use|
+|fileAlgorithm|string|optional|`sha1`|the `crypto` algorithm to use for files|
 
 ---
 

@@ -13,9 +13,9 @@
 
 ---
 
-A [Node.js](https://nodejs.org) utility tool that creates an `.integrity.json` file, that contains the hash checksums of a directory structure.
+A [Node.js](https://nodejs.org) utility tool that creates an integrity object containing the hash checksums of a directory structure, that can be saved to an `.integrity.json` file, or put inside the project's manifest file (`project.json`).
 
-The hashes are computed using the `sha1` algorithm and `base64` encoding by default, complying to [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) spec, but other [Node.js crypto](https://nodejs.org/api/crypto.html) supported [algorithms](https://nodejs.org/api/crypto.html#crypto_crypto_gethashes) and [encodings](https://nodejs.org/api/crypto.html#crypto_hash_digest_encoding) can be used.
+The hashes are computed using, by default, the `sha1` algorithm for files and `sha512` algorithm for directories, with `base64` encoding, complying to [Subresource Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) spec, but other [Node.js crypto](https://nodejs.org/api/crypto.html) supported [algorithms](https://nodejs.org/api/crypto.html#crypto_crypto_gethashes) and [encodings](https://nodejs.org/api/crypto.html#crypto_hash_digest_encoding) can be used.
 
 ## Instalation
 
@@ -33,7 +33,9 @@ npm i ndsi -g
 
 ## Behavior
 
-**NOTE:** The `.integrity.json` file itself is being excluded in all computations.
+**NOTE:**
+- The `.integrity.json` file itself is being excluded in all computations.
+- The `node_modules`, `.git*`, `.svn*`, `.hg*` directories are excluded by default.
 
 ### Files
 
@@ -104,8 +106,8 @@ More info on the used schema can be found [here](https://github.com/JimiC/node-d
 {
   "directoryName": {
     "contents": {
-      "aFileName":  ... computed hash string,
-      "anotherFileName":  ... computed hash string
+      "aFileName":  ... file computed hash string,
+      "anotherFileName":  ... file computed hash string
     },
     "hash": ... directory computed hash string
   }
@@ -118,7 +120,7 @@ Examples of a verbosely computed hash integrity file can be found [here](https:/
 
 ```json
 {
-  "fileOrDirectoryName": ... computed hash string
+  "fileOrDirectoryName": ... file or directory computed hash string
 }
 ```
 
