@@ -8,10 +8,13 @@ import * as constants from '../common/constants';
 import { CryptoEncoding } from '../common/enums';
 import * as utils from '../common/utils';
 import { ICryptoOptions } from '../interfaces/cryptoOptions';
+import { IHashObject } from '../interfaces/hashObject';
 import { IndexedObject } from '../interfaces/indexedObject';
+import { IntegrityObject } from '../interfaces/integrityObject';
 import { IntegrityOptions } from '../interfaces/integrityOptions';
 import { INormalizedCryptoOptions } from '../interfaces/normalizedCryptoOptions';
 import { INormalizedIntegrityOptions } from '../interfaces/normalizedIntegrityOptions';
+import { IVerboseHashObject } from '../interfaces/verboseHashObject';
 
 export class Integrity {
   public static readonly CurrentSchemaVersion = '1';
@@ -35,18 +38,18 @@ export class Integrity {
       options.exclude = exclude;
       options.verbose = verbose || options.verbose;
     }
-    const _hashObj = await Integrity.create(fileOrDirPath, options);
-    let _integrityObj: IndexedObject;
+    const _intObj = await Integrity.create(fileOrDirPath, options);
+    let _integrityObj: IntegrityObject;
     // 'integrity' is a file or directory path
     if (await this._exists(integrity)) {
       integrity = await this._pathCheck(integrity);
       const _content = await this._readFile(integrity, 'utf8');
-      _integrityObj = utils.parseJSON(_content) as IndexedObject;
+      _integrityObj = utils.parseJSON(_content) as IntegrityObject;
       await this._validate(_integrityObj);
-      return this._verify(_hashObj, _integrityObj, fileOrDirPath);
+      return this._verify(_intObj, _integrityObj, fileOrDirPath);
     }
     // 'integrity' is a stringified JSON
-    _integrityObj = utils.parseJSON(integrity) as IndexedObject;
+    _integrityObj = utils.parseJSON(integrity) as IntegrityObject;
     // 'integrity' is a hash
     if (!_integrityObj) {
       _integrityObj = {
@@ -57,47 +60,36 @@ export class Integrity {
       };
     }
     await this._validate(_integrityObj);
-    return this._verify(_hashObj, _integrityObj);
+    return this._verify(_intObj, _integrityObj);
   }
 
-  public static async create(fileOrDirPath: string, options?: IntegrityOptions): Promise<IndexedObject> {
+  public static async create(fileOrDirPath: string, options?: IntegrityOptions): Promise<IntegrityObject> {
     const _ls: fs.Stats = await this._lstat(fileOrDirPath);
-    const _obj: IndexedObject = {};
+    const _obj: IntegrityObject = { hashes: {}, version: this.CurrentSchemaVersion };
     if (_ls.isDirectory()) {
-      _obj.version = this.CurrentSchemaVersion;
       _obj.hashes = await Integrity.createDirHash(fileOrDirPath, options);
     }
     if (_ls.isFile()) {
       const { cryptoOptions } = this._normalizeOptions(options);
-      _obj.version = this.CurrentSchemaVersion;
       _obj.hashes = await Integrity.createFileHash(fileOrDirPath, cryptoOptions);
     }
     return _obj;
   }
 
   public static async createDirHash(dirPath: string, options?: IntegrityOptions)
-    : Promise<IndexedObject> {
+    : Promise<IHashObject> {
     const _ls: fs.Stats = await this._lstat(dirPath);
     if (!_ls.isDirectory()) {
       throw new Error(`ENOTDIR: not a directory, '${path.basename(dirPath)}'`);
     }
     const _options = this._normalizeOptions(options);
-    const _hashes = _options.verbose
+    const _hashes: string | IVerboseHashObject = _options.verbose
       ? await this._computeHashVerbosely(dirPath, _options)
       : await this._computeHash(dirPath, _options);
-    let _hasHashes = false;
-    if (typeof _hashes === 'string') {
-      _hasHashes = !!_hashes;
-    }
-    if (_hashes !== null && typeof _hashes === 'object') {
-      _hasHashes = !!Object.keys(_hashes).length;
-    }
-    return _hasHashes
-      ? { [path.basename(dirPath)]: _hashes }
-      : {};
+    return !!_hashes ? { [path.basename(dirPath)]: _hashes } : {};
   }
 
-  public static async createFileHash(filePath: string, options?: ICryptoOptions): Promise<IndexedObject> {
+  public static async createFileHash(filePath: string, options?: ICryptoOptions): Promise<IHashObject> {
     const _ls: fs.Stats = await this._lstat(filePath);
     if (!_ls.isFile()) {
       throw new Error(`ENOTFILE: not a file, '${path.basename(filePath)}'`);
@@ -106,24 +98,22 @@ export class Integrity {
       throw new Error(`ENOTALW: file not allowed, '${path.basename(filePath)}'`);
     }
     const { fileAlgorithm, encoding } = this._normalizeCryptoOptions(options);
-    return {
-      [path.basename(filePath)]: await this._computeStreamHash(
-        filePath, createHash(fileAlgorithm), fileAlgorithm, encoding),
-    };
+    const _hash = await this._computeStreamHash(filePath, createHash(fileAlgorithm), fileAlgorithm, encoding);
+    return { [path.basename(filePath)]: _hash };
   }
 
-  public static async createFilesHash(filenames: string[], options?: ICryptoOptions): Promise<IndexedObject> {
-    const _hash: IndexedObject = {};
-    const _callback = async (file: string, _obj: IndexedObject): Promise<void> => {
+  public static async createFilesHash(filenames: string[], options?: ICryptoOptions): Promise<IHashObject> {
+    const _hashObj: IHashObject = {};
+    const _callback = async (file: string, _obj: IHashObject): Promise<void> => {
       Object.assign(_obj, await this.createFileHash(file, options));
     };
-    await utils.asyncForEach(filenames, file => _callback(file, _hash));
-    return _hash;
+    await utils.asyncForEach(filenames, file => _callback(file, _hashObj));
+    return _hashObj;
   }
 
-  public static persist(indObj: IndexedObject, dirPath = './'): Promise<void> {
+  public static persist(intObj: IntegrityObject, dirPath = './'): Promise<void> {
     const _filePath = path.resolve(dirPath, constants.integrityFilename);
-    return this._writeFile(_filePath, JSON.stringify(indObj, null, 2));
+    return this._writeFile(_filePath, JSON.stringify(intObj, null, 2));
   }
 
   public static async getManifestIntegrity(): Promise<string> {
@@ -132,9 +122,9 @@ export class Integrity {
     return Promise.resolve(data);
   }
 
-  public static async updateManifest(indObj: IndexedObject): Promise<void> {
+  public static async updateManifest(intObj: IntegrityObject): Promise<void> {
     const _obj = await this._getManifestInfo();
-    _obj.manifest.integrity = indObj;
+    _obj.manifest.integrity = intObj;
     const data = JSON.stringify(_obj.manifest, null, _obj.indentation.indent || _obj.indentation.amount);
     return this._writeFile(constants.manifestFile, data);
   }
@@ -187,15 +177,15 @@ export class Integrity {
   /** @internal */
   private static async _detectOptions(inPath: string, integrity: string): Promise<IntegrityOptions> {
     // get the integrity object
-    let _integrityObj: IndexedObject;
+    let _integrityObj: IntegrityObject;
     // 'integrity' is a file or directory path
     if (await this._exists(integrity)) {
       integrity = await this._pathCheck(integrity);
       const _content = await this._readFile(integrity, 'utf8');
-      _integrityObj = utils.parseJSON(_content) as IndexedObject;
+      _integrityObj = utils.parseJSON(_content) as IntegrityObject;
     } else {
       // 'integrity' is a stringified JSON
-      _integrityObj = utils.parseJSON(integrity) as IndexedObject;
+      _integrityObj = utils.parseJSON(integrity) as IntegrityObject;
       // 'integrity' is a hash
       if (!_integrityObj) {
         _integrityObj = {
@@ -209,22 +199,23 @@ export class Integrity {
     const _options: IntegrityOptions = {};
     if (!_integrityObj || !_integrityObj.hashes) { return _options; }
     await this._validate(_integrityObj);
-    const _first: IndexedObject = _integrityObj.hashes[path.basename(inPath)];
+    const _first: string | IVerboseHashObject = _integrityObj.hashes[path.basename(inPath)];
     if (!_first) { return _options; }
     // detect verbosity
-    _options.verbose = !!_first.hash;
+    _options.verbose = typeof _first !== 'string';
     // detect options
     _options.cryptoOptions = await this._detectCryptoOptions(_first, inPath);
     return _options;
   }
 
-  private static async _detectCryptoOptions(_first: IndexedObject, inPath: string): Promise<ICryptoOptions> {
+  private static async _detectCryptoOptions(_first: string | IVerboseHashObject, inPath: string)
+    : Promise<ICryptoOptions> {
     const _cryptoOptions: ICryptoOptions = {};
     // find integrity members
-    const _getIntegrityMembers = (hash: string): RegExpMatchArray | null => {
-      return hash.match(/^([a-zA-Z0-9-]*)-([\s\S]*)/);
-    };
-    const _integrityMembers = _getIntegrityMembers(_first.hash || _first);
+    const _getIntegrityMembers = (hash: string): RegExpMatchArray | null =>
+      hash ? hash.match(/^([a-zA-Z0-9-]*)-([\s\S]*)/) : null;
+    const _fHash: string = typeof _first === 'string' ? _first : _first.hash;
+    const _integrityMembers = _getIntegrityMembers(_fHash);
     if (!_integrityMembers || !_integrityMembers.length) { return _cryptoOptions; }
     // detect encoding
     const _enc = _integrityMembers[2];
@@ -246,17 +237,18 @@ export class Integrity {
       : undefined;
     // detect fileAlgorithm
     const findFileAlgorithm = async (
-      content: IndexedObject,
+      content: IHashObject,
       pathTo: string,
     ): Promise<string | undefined> => {
-      if (!content) { return undefined; }
       for (const key of Object.keys(content)) {
-        const _hash = content[key];
-        const _path = path.join(pathTo, key);
+        const _hash: string | IVerboseHashObject = content[key];
+        const _path: string = path.join(pathTo, key);
         if (!await this._exists(_path)) { continue; }
         // it's a directory
-        if ((await this._lstat(_path)).isDirectory()) {
-          return findFileAlgorithm(_hash.contents, _path);
+        if (typeof _hash !== 'string') {
+          return (await this._lstat(_path)).isDirectory()
+            ? findFileAlgorithm(_hash.contents, _path)
+            : undefined;
         }
         // it's a file
         const _im = _getIntegrityMembers(_hash);
@@ -265,7 +257,7 @@ export class Integrity {
       }
       return undefined;
     };
-    _cryptoOptions.fileAlgorithm = stat.isFile()
+    _cryptoOptions.fileAlgorithm = stat.isFile() || typeof _first === 'string'
       ? _cryptoHashes.find(algorithm => algorithm === _integrityMembers[1])
       : await findFileAlgorithm(_first.contents, inPath);
     return _cryptoOptions;
@@ -346,45 +338,51 @@ export class Integrity {
   }
 
   /** @internal */
-  private static async _verify(hashedObj: IndexedObject, integrity: IndexedObject, inPath?: string): Promise<boolean> {
-    if (!hashedObj) { return false; }
-    if (hashedObj.version !== integrity.version) {
+  private static async _verify(intObj: IntegrityObject, integrity: IntegrityObject, inPath?: string): Promise<boolean> {
+    if (!intObj) { return false; }
+    if (intObj.version !== integrity.version) {
       throw new Error('EINVER: Incompatible versions check');
     }
-    const _equals = (obj1: IndexedObject, obj2: IndexedObject): boolean => {
+    const _equals = (obj1: IntegrityObject, obj2: IntegrityObject): boolean => {
       return JSON.stringify(utils.sortObject(obj1)) === JSON.stringify(utils.sortObject(obj2));
     };
     const _deepEquals = async (_path?: string): Promise<boolean> => {
       if (!_path) { return false; }
       let _has = false;
       const _filenameOrDirectory = path.basename(_path);
-      const _hashes = integrity.hashes;
+      const _hashes: IHashObject = integrity.hashes;
       const _dirList = path.dirname(_path).split(path.sep).filter(pt => pt);
-      const _findHash = (_array: string[], hashes: IndexedObject): void => {
+      const _findHash = (_array: string[], _hashObj: IHashObject): void => {
         if (!_array.length) {
-          const integrityHash = hashes[_filenameOrDirectory];
-          const hashedObjHash = hashedObj.hashes[_filenameOrDirectory];
-          _has = _equals(integrityHash, hashedObjHash) || _equals(integrityHash, hashedObjHash.hash);
+          const _integrityHash: string | IVerboseHashObject = _hashObj[_filenameOrDirectory];
+          const _hashedObjHash: string | IVerboseHashObject = intObj.hashes[_filenameOrDirectory];
+          _has = typeof _integrityHash === 'string'
+            ? typeof _hashedObjHash === 'string'
+              ? _integrityHash === _hashedObjHash
+              : _integrityHash === _hashedObjHash.hash
+            : typeof _hashedObjHash === 'string'
+              ? _integrityHash.hash === _hashedObjHash
+              : _integrityHash.hash === _hashedObjHash.hash;
           return;
         }
-        const _rootHash = hashes[_array[0]];
+        const _rootHash = _hashObj[_array[0]];
         // non-verbosely directory hash
         if (typeof _rootHash === 'string') {
-          _has = _rootHash === hashedObj.hashes[_array[0]];
+          _has = _rootHash === intObj.hashes[_array[0]];
           return;
         }
         // verbosely directory hash
-        const _subDir = Object.keys(_rootHash.contents).find(key => key === _array[1]);
+        const _subDir: string | undefined = Object.keys(_rootHash.contents).find(key => key === _array[1]);
         _array = _subDir ? _array.splice(1) : [];
         return _findHash(_array, _rootHash.contents);
       };
       const _findRootIndex = async (_array: string[], _index: number): Promise<number> => {
-        const _dirPath = utils.getAbsolutePath(_array, _index);
-        const _dirHash = await this.createDirHash(_dirPath, { verbose: true });
-        const _integrityDirHash: string | IndexedObject = _hashes[_array[_index]];
-        const _dirHashes: IndexedObject = _dirHash[_array[_index]];
+        const _dirPath: string = utils.getAbsolutePath(_array, _index);
+        const _dirHashObj: IHashObject = await this.createDirHash(_dirPath, { verbose: true });
+        const _integrityDirHash: string | IVerboseHashObject = _hashes[_array[_index]];
+        const _dirHashes = _dirHashObj[_array[_index]] as IVerboseHashObject;
         if (_integrityDirHash && _dirHashes) {
-          const _hash = typeof _integrityDirHash === 'string'
+          const _hash: string = typeof _integrityDirHash === 'string'
             // non-verbose
             ? _integrityDirHash
             // verbose
@@ -395,15 +393,15 @@ export class Integrity {
         }
         return -1;
       };
-      const _potentialRootIndex = _dirList.findIndex(dir => _hashes[dir]);
+      const _potentialRootIndex: number = _dirList.findIndex(dir => !!_hashes[dir]);
       if (_potentialRootIndex === -1) { return false; }
-      const _rootIndex = await _findRootIndex(_dirList, _potentialRootIndex);
+      const _rootIndex: number = await _findRootIndex(_dirList, _potentialRootIndex);
       if (_rootIndex === -1) { return false; }
       _findHash(_dirList.splice(_rootIndex), _hashes);
       return _has;
     };
-    const _isEqual = _equals(hashedObj, integrity);
-    const _isDeepEqual = await _deepEquals(inPath);
+    const _isEqual: boolean = _equals(intObj, integrity);
+    const _isDeepEqual: boolean = await _deepEquals(inPath);
     return _isEqual || _isDeepEqual;
   }
 
@@ -463,9 +461,9 @@ export class Integrity {
 
   /** @internal */
   private static async _computeHashVerbosely(dirPath: string, options: INormalizedIntegrityOptions)
-    : Promise<IndexedObject> {
-    const _recurseVerbosely = async (_dirPath: string): Promise<IndexedObject> => {
-      const _callback = async (filename: string, contents: IndexedObject): Promise<void> => {
+    : Promise<IVerboseHashObject> {
+    const _recurseVerbosely = async (_dirPath: string): Promise<IVerboseHashObject> => {
+      const _callback = async (filename: string, contents: IHashObject): Promise<void> => {
         const _curPath = path.join(_dirPath, filename);
         if (this._excludePath(_curPath, options)) {
           return;
@@ -478,19 +476,19 @@ export class Integrity {
           Object.assign(contents, await this.createFileHash(_curPath, options.cryptoOptions));
         }
       };
-      const _hashObj: IndexedObject = { contents: {}, hash: await this._computeHash(_dirPath, options) };
+      const _verbHashObj: IVerboseHashObject = { contents: {}, hash: await this._computeHash(_dirPath, options) };
       await utils.asyncForEach(await this._readdir(_dirPath),
-        (filename: string) => _callback(filename, _hashObj.contents));
-      return _hashObj;
+        (filename: string) => _callback(filename, _verbHashObj.contents));
+      return _verbHashObj;
     };
     if (options.exclude.some(excl => this._match(dirPath, excl))) {
-      return {};
+      return { contents: {}, hash: '' };
     }
     return _recurseVerbosely(dirPath);
   }
 
   /** @internal */
-  private static async _validate(data: IndexedObject): Promise<void> {
+  private static async _validate(data: IntegrityObject): Promise<void> {
     const _path = path.resolve(__dirname, `../schemas/v${data.version}/schema.json`);
     if (!(await this._exists(_path))) {
       throw new Error(`EINVER: Invalid schema version, 'version: ${data.version}'`);

@@ -8,6 +8,7 @@ import { Readable } from 'stream';
 import { Integrity } from '../../src/app/integrity';
 import * as utils from '../../src/common/utils';
 import { IntegrityOptions } from '../../src/interfaces/integrityOptions';
+import { IVerboseHashObject } from '../../src/interfaces/verboseHashObject';
 import { checker } from '../helper';
 
 describe('Integrity: function \'createDirHash\' tests', function () {
@@ -170,7 +171,8 @@ describe('Integrity: function \'createDirHash\' tests', function () {
           const sut = await Integrity.createDirHash(fixturesDirPath, options);
           expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
           expect(sut.fixtures).to.haveOwnProperty('contents');
-          expect(sut.fixtures.contents).to.haveOwnProperty(fileToHashFilename)
+          const fixtures = sut.fixtures as IVerboseHashObject;
+          expect(fixtures.contents).to.haveOwnProperty(fileToHashFilename)
             .and.to.satisfy((hash: string) =>
               checker(hash, utils.hexRegexPattern,
                 '1f9f2660d8db3094e488dbef35f8f660a977724d',
@@ -183,7 +185,8 @@ describe('Integrity: function \'createDirHash\' tests', function () {
           const sut = await Integrity.createDirHash(fixturesDirPath, options);
           expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
           expect(sut.fixtures).to.haveOwnProperty('contents');
-          expect(sut.fixtures.contents).to.haveOwnProperty(fileToHashFilename)
+          const fixtures = sut.fixtures as IVerboseHashObject;
+          expect(fixtures.contents).to.haveOwnProperty(fileToHashFilename)
             .and.to.satisfy((hash: string) =>
               checker(hash, utils.latin1RegexPattern, '\u001f&`ØÛ0äÛï5øö`©wrM'));
         });
@@ -193,8 +196,9 @@ describe('Integrity: function \'createDirHash\' tests', function () {
           options.cryptoOptions = { fileAlgorithm: 'md5' };
           const sut = await Integrity.createDirHash(fixturesDirPath, options);
           expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-          expect(sut.fixtures).to.haveOwnProperty('contents');
-          expect(sut.fixtures.contents).to.haveOwnProperty(fileToHashFilename)
+          const fixtures = sut.fixtures as IVerboseHashObject;
+          expect(fixtures).to.haveOwnProperty('contents');
+          expect(fixtures.contents).to.haveOwnProperty(fileToHashFilename)
             .and.to.satisfy((hash: string) =>
               checker(hash, utils.base64RegexPattern,
                 'ej1bR1vQeukEH6sqEz9AxA==',
@@ -398,9 +402,11 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             options.exclude = [fileToHashFilename];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
             expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            const fcfixtures = fixtures.contents.fixtures as IVerboseHashObject;
+            expect(fcfixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'Sh3ed4hhzI8eSodzoJphpTle3D9uimG+srSpn0g8OLqW' +
@@ -413,9 +419,11 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             options.exclude = ['**/fileToHash.txt'];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
             expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            const fcfixtures = fixtures.contents.fixtures as IVerboseHashObject;
+            expect(fcfixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'Sh3ed4hhzI8eSodzoJphpTle3D9uimG+srSpn0g8OLqW' +
@@ -428,15 +436,19 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             options.exclude = [fileToHashFilename, otherFileToHashFilename];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
             expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents.directory.contents).to.not.haveOwnProperty(otherFileToHashFilename);
-            expect(sut.fixtures.contents['directory.1'].contents).to.not.haveOwnProperty(otherFileToHashFilename);
-            expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents.fixtures.contents.directory.contents)
-              .to.not.haveOwnProperty(otherFileToHashFilename);
-            expect(sut.fixtures.contents.fixtures.contents['directory.1'].contents)
-              .to.not.haveOwnProperty(otherFileToHashFilename);
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            const fcdirectorydot1 = fixtures.contents['directory.1'] as IVerboseHashObject;
+            expect(fcdirectorydot1.contents).to.not.haveOwnProperty(otherFileToHashFilename);
+            const fcdirectory = fixtures.contents.directory as IVerboseHashObject;
+            expect(fcdirectory.contents).to.not.haveOwnProperty(otherFileToHashFilename);
+            const fcfixtures = fixtures.contents.fixtures as IVerboseHashObject;
+            expect(fcfixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            const fcfcdirectorydot1 = fcfixtures.contents['directory.1'] as IVerboseHashObject;
+            expect(fcfcdirectorydot1.contents).to.not.haveOwnProperty(otherFileToHashFilename);
+            const fcfcdirectory = fcfixtures.contents.directory as IVerboseHashObject;
+            expect(fcfcdirectory.contents).to.not.haveOwnProperty(otherFileToHashFilename);
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'D5JDvAmGPhnjGqzANq7d1PyuAcamcOUeZnTW8ziOQ8YI' +
@@ -449,9 +461,11 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             options.exclude = ['**/fileToHash.txt', '**/otherFileToHash.txt'];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
             expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            const fcfixtures = fixtures.contents.fixtures as IVerboseHashObject;
+            expect(fcfixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'D5JDvAmGPhnjGqzANq7d1PyuAcamcOUeZnTW8ziOQ8YI' +
@@ -464,9 +478,11 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             options.exclude = ['**/*.txt'];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
             expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            const fcfixtures = fixtures.contents.fixtures as IVerboseHashObject;
+            expect(fcfixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'zhTA6hn1p6hmlSU3I1VT1zbtS/xwB7VU2Y+EOgd3n2bj' +
@@ -479,9 +495,11 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             options.exclude = ['**/*.*'];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
             expect(sut).to.be.an('object').and.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents.fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            const fcfixtures = fixtures.contents.fixtures as IVerboseHashObject;
+            expect(fcfixtures.contents).to.not.haveOwnProperty(fileToHashFilename);
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'S3Hwm/DiUVVrGKpl/mWimwLKL2buJyDd9YzQj/ZS2ykH' +
@@ -493,14 +511,20 @@ describe('Integrity: function \'createDirHash\' tests', function () {
           async function () {
             options.exclude = ['fixtures'];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').that.is.empty;
+            expect(sut).to.be.an('object');
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.be.empty;
+            expect(fixtures.hash).to.be.empty;
           });
 
         it('the provided directory (glob pattern)',
           async function () {
             options.exclude = ['**/fixtures'];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').that.is.empty;
+            expect(sut).to.be.an('object');
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.be.empty;
+            expect(fixtures.hash).to.be.empty;
           });
 
         it('the provided directory contents (glob pattern)',
@@ -512,7 +536,8 @@ describe('Integrity: function \'createDirHash\' tests', function () {
               .to.haveOwnProperty('fixtures')
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.be.empty;
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'VS0vn1tFpwFNeOnneQ2kuMyXkTxgm1zBS76hApwMFVHh' +
@@ -524,7 +549,10 @@ describe('Integrity: function \'createDirHash\' tests', function () {
           async function () {
             options.exclude = ['**/*'];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
-            expect(sut).to.be.an('object').that.is.empty;
+            expect(sut).to.be.an('object');
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).to.be.empty;
+            expect(fixtures.hash).to.be.empty;
           });
 
         it('the provided subdirectory',
@@ -542,7 +570,8 @@ describe('Integrity: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('fixtures')
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.not.haveOwnProperty('directory');
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'Mxema7+o7uDni/0O3OCjsr+CeG05csSon2FK8yYVJkaM' +
@@ -565,7 +594,8 @@ describe('Integrity: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('fixtures')
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.not.haveOwnProperty('directory');
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'Mxema7+o7uDni/0O3OCjsr+CeG05csSon2FK8yYVJkaM' +
@@ -584,7 +614,8 @@ describe('Integrity: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('directory')
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.be.empty;
-            expect(sut.fixtures.hash)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   '0W+w+kRaPwvCI5ykMarvTPG90y/w+g5Qa0hbstaRaOsC' +
@@ -617,17 +648,19 @@ describe('Integrity: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty(fileToHashFilename)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern, 't56X7IQ267Hza0qjpSpqb9UPcfE='));
-            expect(sut.fixtures.contents)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents)
               .to.haveOwnProperty(fileToHashFilename)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern, 'H58mYNjbMJTkiNvvNfj2YKl3ck0='));
-            expect(sut.fixtures.contents.fixtures.hash)
+            const fcfixtures = fixtures.contents.fixtures as IVerboseHashObject;
+            expect(fcfixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'xsFFG6BuNpe8Q9hxyOCgGPY1ZXSnd7uEPG0LfmjSz/g8' +
                   '8weE01dXScfFEy5ItkDDqYioR75treREV2yMT6dUoQ==',
                   'sha512'));
-            expect(sut.fixtures.hash)
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'fdgmzQQJNKpYGOU1tANBRFexht90qgRY+5CEuJ8vdTwM' +
@@ -643,15 +676,16 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             expect(sut)
               .to.haveOwnProperty('fixtures')
               .and.that.to.haveOwnProperty('contents');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('directory');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('directory.1');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('sameContentWithFileToHash.txt');
-            expect(sut.fixtures.contents)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).not.to.haveOwnProperty('fixtures');
+            expect(fixtures.contents).not.to.haveOwnProperty('directory');
+            expect(fixtures.contents).not.to.haveOwnProperty('directory.1');
+            expect(fixtures.contents).not.to.haveOwnProperty('sameContentWithFileToHash.txt');
+            expect(fixtures.contents)
               .to.haveOwnProperty(fileToHashFilename)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern, 'H58mYNjbMJTkiNvvNfj2YKl3ck0='));
-            expect(sut.fixtures.hash)
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'jU0ENm52s6vv8Qk4naKzQ+ldqOTpVnpla7bHLN7gkrlB' +
@@ -664,10 +698,11 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             options.exclude = ['!**/fixtures', '!**/fixtures/fixtures/fileToHash.txt'];
             const sut = await Integrity.createDirHash(fixturesDirPath, options);
             expect(sut).to.be.an('object');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('directory');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('directory.1');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('sameContentWithFileToHash.txt');
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).not.to.haveOwnProperty('directory');
+            expect(fixtures.contents).not.to.haveOwnProperty('directory.1');
+            expect(fixtures.contents).not.to.haveOwnProperty(fileToHashFilename);
+            expect(fixtures.contents).not.to.haveOwnProperty('sameContentWithFileToHash.txt');
             expect(sut)
               .to.haveOwnProperty('fixtures')
               .and.that.to.haveOwnProperty('contents')
@@ -676,12 +711,13 @@ describe('Integrity: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty(fileToHashFilename)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern, 't56X7IQ267Hza0qjpSpqb9UPcfE='));
-            expect(sut.fixtures.contents.fixtures.hash)
+            const fcfixtures = fixtures.contents.fixtures as IVerboseHashObject;
+            expect(fcfixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'xsFFG6BuNpe8Q9hxyOCgGPY1ZXSnd7uEPG0LfmjSz/g88weE01dXScfFEy5ItkDDqYioR75treREV2yMT6dUoQ==',
                   'sha512'));
-            expect(sut.fixtures.hash)
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'i066+5P7XKubRVkelKvC9+cNxMe9uPA3cgkre24Tp5+l' +
@@ -697,18 +733,19 @@ describe('Integrity: function \'createDirHash\' tests', function () {
             expect(sut)
               .to.haveOwnProperty('fixtures')
               .and.that.to.haveOwnProperty('contents');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('directory');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('directory.1');
-            expect(sut.fixtures.contents)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).not.to.haveOwnProperty('fixtures');
+            expect(fixtures.contents).not.to.haveOwnProperty('directory');
+            expect(fixtures.contents).not.to.haveOwnProperty('directory.1');
+            expect(fixtures.contents)
               .to.haveOwnProperty('sameContentWithFileToHash.txt')
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern, 'l5sOr3meWkHyZWPi2Ln4GM7/lrg='));
-            expect(sut.fixtures.contents)
+            expect(fixtures.contents)
               .to.haveOwnProperty(fileToHashFilename)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern, 'H58mYNjbMJTkiNvvNfj2YKl3ck0='));
-            expect(sut.fixtures.hash)
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'SUoveyMtTFO5zEKmSjLk9nFOGBezDdqpD5DJiNYasQ17' +
@@ -729,25 +766,27 @@ describe('Integrity: function \'createDirHash\' tests', function () {
               .and.that.to.haveOwnProperty('contents')
               .and.that.to.haveOwnProperty('directory')
               .and.that.to.haveOwnProperty('contents');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('fixtures');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('directory.1');
-            expect(sut.fixtures.contents).not.to.haveOwnProperty(fileToHashFilename);
-            expect(sut.fixtures.contents).not.to.haveOwnProperty('sameContentWithFileToHash.txt');
-            expect(sut.fixtures.contents.directory.contents)
+            const fixtures = sut.fixtures as IVerboseHashObject;
+            expect(fixtures.contents).not.to.haveOwnProperty('fixtures');
+            expect(fixtures.contents).not.to.haveOwnProperty('directory.1');
+            expect(fixtures.contents).not.to.haveOwnProperty(fileToHashFilename);
+            expect(fixtures.contents).not.to.haveOwnProperty('sameContentWithFileToHash.txt');
+            const fcdirectory = fixtures.contents.directory as IVerboseHashObject;
+            expect(fcdirectory.contents)
               .to.haveOwnProperty('anotherFileToHash.txt')
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern, 'EZ2w0rsSmXBOddIoz2IoOIuxGaQ='));
-            expect(sut.fixtures.contents.directory.contents)
+            expect(fcdirectory.contents)
               .to.haveOwnProperty('otherFileToHash.txt')
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern, 'B8FJ4uKgHESSgMvJUyrj3ix2uG8='));
-            expect(sut.fixtures.contents.directory.hash)
+            expect(fcdirectory.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'Ze62278vNFKc3izakn2FgyvHIZEbnsuqKogaZLA1ihM1' +
                   'zk95RKlz+z7qk1XEysMaoJlpDNqSWx4PoPp2cFNBPw==',
                   'sha512'));
-            expect(sut.fixtures.hash)
+            expect(fixtures.hash)
               .and.to.satisfy((hash: string) =>
                 checker(hash, utils.base64RegexPattern,
                   'wfY0H0xgB1h2jlkg11q56mX6EgiGEpEpGFxpspUGjG+G' +

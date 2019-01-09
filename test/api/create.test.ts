@@ -42,8 +42,10 @@ describe('Integrity: function \'create\' tests', function () {
         const sut = await Integrity.create(fixturesDirPath);
         lstatStub.restore();
         expect(lstatStub.calledOnce).to.be.true;
-        expect(sut).to.be.an('object').that.is.empty;
-      });
+        expect(sut).to.be.an('object');
+        expect(sut).to.haveOwnProperty('hashes').that.is.empty;
+        expect(sut).to.haveOwnProperty('version').that.matches(/\d/);
+  });
 
     context('to produce a valid schema when hashing', function () {
 

@@ -70,7 +70,7 @@ describe('Integrity: function \'check\' tests', function () {
         async function () {
           const hashObj = '{"version":"2","hashes":{"fileToHash.txt":"7a3d5b475bd07ae9041fab2a133f40c4"}}';
           // @ts-ignore
-          const validateStub = sandbox.stub(Integrity, '_validate').resolves();
+          sandbox.stub(Integrity, '_validate').resolves();
           try {
             await Integrity.check(fileToHashFilePath, hashObj);
           } catch (error) {
@@ -104,36 +104,6 @@ describe('Integrity: function \'check\' tests', function () {
     });
 
     context('to fail integrity check when', function () {
-
-      context('integrity file content is', function () {
-
-        it('empty',
-          async function () {
-            // @ts-ignore
-            const readFileStub = sandbox.stub(Integrity, '_readFile')
-              .returns('');
-            try {
-              await Integrity.check(fileToHashFilePath, integrityTestFilePath);
-            } catch (error) {
-              expect(readFileStub.called).to.be.true;
-              expect(error).to.be.an.instanceof(Error);
-            }
-          });
-
-        it('invalid',
-          async function () {
-            // @ts-ignore
-            const readFileStub = sandbox.stub(Integrity, '_readFile')
-              .returns('invalid integrity object');
-            try {
-              await Integrity.check(fileToHashFilePath, integrityTestFilePath);
-            } catch (error) {
-              expect(readFileStub.called).to.be.true;
-              expect(error).to.be.an.instanceof(Error);
-            }
-          });
-
-      });
 
       it('input path is an empty string',
         async function () {
@@ -197,6 +167,35 @@ describe('Integrity: function \'check\' tests', function () {
           Integrity.check(fileToHashFilePath, Symbol()).then(sut =>
             expect(sut).to.be.a('boolean').and.to.be.false);
         });
+
+      context('integrity file content is', function () {
+
+        it('empty',
+          async function () {
+            // @ts-ignore
+            const readFileStub = sandbox.stub(Integrity, '_readFile').returns('');
+            try {
+              await Integrity.check(fileToHashFilePath, integrityTestFilePath);
+            } catch (error) {
+              expect(readFileStub.called).to.be.true;
+              expect(error).to.be.an.instanceof(Error);
+            }
+          });
+
+        it('invalid',
+          async function () {
+            // @ts-ignore
+            const readFileStub = sandbox.stub(Integrity, '_readFile')
+              .returns('invalid integrity object');
+            try {
+              await Integrity.check(fileToHashFilePath, integrityTestFilePath);
+            } catch (error) {
+              expect(readFileStub.called).to.be.true;
+              expect(error).to.be.an.instanceof(Error);
+            }
+          });
+
+      });
 
     });
 
@@ -355,10 +354,26 @@ describe('Integrity: function \'check\' tests', function () {
             async function () {
               options.verbose = false;
               // @ts-ignore
-              const readFileStub = sandbox.stub(Integrity, '_readFile')
+              sandbox.stub(Integrity, '_readFile')
                 .returns('{"version":"1","hashes":{"fixtures":"sha512-' +
                   'WlFP+kAPdHyGd9E8SgkFfxuGvz9l/cqjt8gAhrHDdWLBIkkZGxgxxgpWZuARLVD7ACCxq8rVeNbwNL7NKyeWsA=="}}');
               const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
+              expect(sut).to.be.a('boolean').and.to.be.true;
+            });
+
+          it('of a subdirectory input directory path, provided a verbosely directory hash',
+            async function () {
+              options.verbose = false;
+              const hash = '{"version":"1","hashes":{' +
+                '"fixtures":{"contents":{"directory":{"contents":{},' +
+                '"hash":"sha512-Ze62278vNFKc3izakn2FgyvHIZEbnsuqKogaZ' +
+                'LA1ihM1zk95RKlz+z7qk1XEysMaoJlpDNqSWx4PoPp2cFNBPw=="}},' +
+                '"hash":"sha512-WlFP+kAPdHyGd9E8SgkFfxuGvz9l/cqjt8gAh' +
+                'rHDdWLBIkkZGxgxxgpWZuARLVD7ACCxq8rVeNbwNL7NKyeWsA=="' +
+                '}}}';
+              // @ts-ignore
+              sandbox.stub(Integrity, '_readFile').returns(hash);
+              const sut = await Integrity.check(directoryDirPath, './', options);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
 
@@ -375,7 +390,7 @@ describe('Integrity: function \'check\' tests', function () {
                 '"hash":"sha512-' +
                 'WlFP+kAPdHyGd9E8SgkFfxuGvz9l/cqjt8gAhrHDdWLBIkkZGxgxxgpWZuARLVD7ACCxq8rVeNbwNL7NKyeWsA=="}}}';
               // @ts-ignore
-              const readFileStub = sandbox.stub(Integrity, '_readFile').returns(hash);
+              sandbox.stub(Integrity, '_readFile').returns(hash);
               const sut = await Integrity.check(directoryDirPath, integrityTestFilePath, options);
               expect(sut).to.be.a('boolean').and.to.be.true;
             });
@@ -395,8 +410,7 @@ describe('Integrity: function \'check\' tests', function () {
                 '"contents":{"directory":""},' +
                 '"hash":"sha1-DIjHOBHMnvpJxM4onkxvXbmcdME="}}}';
               // @ts-ignore
-              const readFileStub = sandbox.stub(Integrity, '_readFile')
-                .returns(hash);
+              sandbox.stub(Integrity, '_readFile').returns(hash);
               const sut = await Integrity.check(directoryDirPath, integrityTestFilePath, options);
               expect(sut).to.be.a('boolean').and.to.be.false;
             });
@@ -411,8 +425,7 @@ describe('Integrity: function \'check\' tests', function () {
                     '"sha512-WlFP+kAPdHyGd9E8SgkFfxuGvz9l/cqjt8gAhrHDd' +
                     'WLBIkkZGxgxxgpWZuARLVD7ACCxq8rVeNbwNL7NKyeWsA=="}}';
                   // @ts-ignore
-                  const readFileStub = sandbox.stub(Integrity, '_readFile')
-                    .returns(hash);
+                  sandbox.stub(Integrity, '_readFile').returns(hash);
                   const sut = await Integrity.check(directoryDirPath, integrityTestFilePath, options);
                   expect(sut).to.be.a('boolean').and.to.be.false;
                 });
@@ -424,8 +437,7 @@ describe('Integrity: function \'check\' tests', function () {
                     '"sha512-Ze62278vNFKc3izakn2FgyvHIZEbnsuqKogaZLA1' +
                     'ihM1zk95RKlz+z7qk1XEysMaoJlpDNqSWx4PoPp2cFNBPw=="}}';
                   // @ts-ignore
-                  const readFileStub = sandbox.stub(Integrity, '_readFile')
-                    .returns(hash);
+                  sandbox.stub(Integrity, '_readFile').returns(hash);
                   const sut = await Integrity.check(directoryDirPath, integrityTestFilePath, options);
                   expect(sut).to.be.a('boolean').and.to.be.false;
                 });
@@ -653,18 +665,22 @@ describe('Integrity: function \'check\' tests', function () {
 
     });
 
-    it('it\'s a file but invalid hash',
-      async function () {
-        const hashObj = '{"version":"1","hashes":{"fixtures":{' +
-          '"contents":{"directory":{' +
-          '"contents":{"anotherFileToHash.txt":"md5123456"},"hash":"sha1-123456"},' +
-          '"hash":"sha1-123456"},' +
-          '"hash":"sha1-123456"}}}';
-        const sut = await Integrity.check(fixturesDirPath, hashObj);
-        expect(sut).to.be.a('boolean').and.to.be.false;
-      });
-
     context('when detecting options', function () {
+
+      it('to preserve \'exclude\' option',
+        async function () {
+          options.exclude = [fileToHashFilename];
+          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
+          expect(sut).to.be.a('boolean').and.to.be.false;
+        });
+
+      it('to bypass detection when all crypto options are provided',
+        async function () {
+          options.cryptoOptions = { dirAlgorithm: 'sha512', fileAlgorithm: 'sha1', encoding: 'base64' };
+          options.verbose = true;
+          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
+          expect(sut).to.be.a('boolean').and.to.be.true;
+        });
 
       context('to succesfully detect', function () {
 
@@ -709,24 +725,24 @@ describe('Integrity: function \'check\' tests', function () {
 
       });
 
-      it('to preserve \'exclude\' option',
-        async function () {
-          options.exclude = [fileToHashFilename];
-          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
-          expect(sut).to.be.a('boolean').and.to.be.false;
-        });
-
-      it('to bypass detection when all crypto options are provided',
-        async function () {
-          options.cryptoOptions = { dirAlgorithm: 'sha512', fileAlgorithm: 'sha1', encoding: 'base64' };
-          options.verbose = true;
-          const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath, options);
-          expect(sut).to.be.a('boolean').and.to.be.true;
-        });
-
       context('to fail detection when', function () {
 
-        it('provided a file path, the integrity hash object can not be determined',
+        it('the integrity object contains an existing directory/file but has invalid hash object',
+          async function () {
+            // This is a scenario that can not happen when using the 'create' function,
+            // because hash creation produces a hash string for files.
+            // We cover this scenario, in case the user provides a self-created integrity file.
+
+            const hashObj = '{"version":"1","hashes":{"fixtures":{' +
+              '"contents":{"fileToHash.txt":{' +
+              '"contents":{"anotherFileToHash.txt":"md5123456"},"hash":"sha1-123456"},' +
+              '"hash":"sha1-123456"},' +
+              '"hash":"sha1-123456"}}}';
+            const sut = await Integrity.check(fixturesDirPath, hashObj);
+            expect(sut).to.be.a('boolean').and.to.be.false;
+          });
+
+        it('provided a file path, the integrity object can not be determined',
           async function () {
             options.cryptoOptions = { encoding: 'latin1' };
             const resolvedHashObj = await Integrity.create(fixturesDirPath, options);
@@ -735,6 +751,24 @@ describe('Integrity: function \'check\' tests', function () {
               .returns(resolvedHashObj);
             const sut = await Integrity.check(fixturesDirPath, integrityTestFilePath);
             expect(parseStub.called).to.be.true;
+            expect(sut).to.be.a('boolean').and.to.be.false;
+          });
+
+        it('it is a file with invalid hash',
+          async function () {
+            const hashObj = '{"version":"1","hashes":{"fixtures":{' +
+              '"contents":{"directory":{' +
+              '"contents":{"anotherFileToHash.txt":"md5123456"},"hash":"sha1-123456"},' +
+              '"hash":"sha1-123456"},' +
+              '"hash":"sha1-123456"}}}';
+            const sut = await Integrity.check(fixturesDirPath, hashObj);
+            expect(sut).to.be.a('boolean').and.to.be.false;
+          });
+
+        it('the integrity object has no hash',
+          async function () {
+            const hashObj = '{"version":"1","hashes":{"fixtures":{"contents":{},"hash":""}}}';
+            const sut = await Integrity.check(fixturesDirPath, hashObj);
             expect(sut).to.be.a('boolean').and.to.be.false;
           });
 

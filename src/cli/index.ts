@@ -2,7 +2,7 @@ import { HexBase64Latin1Encoding } from 'crypto';
 import { Integrity } from '../app/integrity';
 import { Logger } from '../common/logger';
 import { YargsParser } from '../common/yargsParser';
-import { IndexedObject } from '../interfaces/indexedObject';
+import { IntegrityObject } from '../interfaces/integrityObject';
 import { IntegrityOptions } from '../interfaces/integrityOptions';
 import { ISpinner } from '../interfaces/spinner';
 
@@ -26,7 +26,7 @@ export = (async (): Promise<void> => {
   try {
     if (pargs.command === 'create') {
       spinner = logger.spinnerLogStart('Creating integrity hash', id);
-      const hash: IndexedObject = await Integrity.create(pargs.inPath, options);
+      const hash: IntegrityObject = await Integrity.create(pargs.inPath, options);
       if (!pargs.manifest) {
         await Integrity.persist(hash, pargs.outPath);
         message = 'Integrity hash file created';
